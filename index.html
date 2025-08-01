@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestor Financiero Personal (Versión Excel)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #0f172a; /* slate-900 */
+        color: #f1f5f9; /* slate-100 */
+      }
+      .card {
+        background-color: #1e293b; /* slate-800 */
+        border: 1px solid #334155; /* slate-700 */
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .card-content {
+        flex-grow: 1;
+      }
+      .btn {
+        transition: all 0.3s ease;
+      }
+      .btn:disabled {
+        background-color: #334155; /* slate-700 */
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+      .btn-primary {
+        background-color: #4f46e5; /* indigo-600 */
+        color: white;
+      }
+      .btn-primary:hover:not(:disabled) {
+        background-color: #4338ca; /* indigo-700 */
+      }
+      .btn-success {
+        background-color: #10b981; /* emerald-500 */
+        color: white;
+      }
+      .btn-success:hover:not(:disabled) {
+        background-color: #059669; /* emerald-600 */
+      }
+      .btn-danger {
+        background-color: #ef4444; /* red-500 */
+        color: white;
+      }
+      .btn-danger:hover:not(:disabled) {
+        background-color: #dc2626; /* red-600 */
+      }
+      .input-field,
+      .select-field {
+        background-color: #334155; /* slate-700 */
+        border: 1px solid #475569; /* slate-600 */
+        color: #f1f5f9; /* slate-100 */
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem; /* sm */
+      }
+      .input-field:focus,
+      .select-field:focus {
+        outline: none;
+        border-color: #4f46e5; /* indigo-600 */
+        box-shadow: 0 0 0 2px #3730a3; /* indigo-800 */
+      }
+      input[type="date"]::-webkit-calendar-picker-indicator,
+      input[type="file"]::-webkit-file-upload-button {
+        filter: invert(1);
+        cursor: pointer;
+      }
+      .progress-bar {
+        background-color: #334155;
+      }
+      .progress-bar-fill {
+        background-color: #4f46e5;
+        transition: width 0.5s ease-in-out;
+      }
+      .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+      .tab-active {
+        background-color: #4f46e5;
+        color: white;
+      }
+      .item-inactive {
+        opacity: 0.5;
+      }
+      .item-inactive .description-text {
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-screen-2xl mx-auto space-y-6">
+      <header class="text-center">
+        <h1
+          class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400"
+        >
+          Panel de Control Financiero
+        </h1>
+        <p class="text-slate-400 mt-2">
+          Tus finanzas, tus datos, tu control total con Excel.
+        </p>
+      </header>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
+        <div class="card">
+          <h2 class="text-xl font-bold mb-3 text-slate-200">
+            Gestión de Datos
+          </h2>
+          <div class="card-content space-y-4 flex flex-col justify-between">
+            <div>
+              <label
+                for="excel-upload"
+                class="block text-sm font-medium text-slate-400 mb-1"
+                >Carga tu archivo</label
+              >
+              <input
+                type="file"
+                id="excel-upload"
+                class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                accept=".xlsx, .xls"
+              />
+              <p
+                id="file-name"
+                class="text-xs text-center text-green-400 mt-1 truncate"
+              ></p>
+            </div>
+            <div class="space-y-2">
+              <button
+                id="view-suggestions-btn"
+                class="w-full btn btn-primary py-2 px-4 rounded-lg text-sm"
+              >
+                Ver Sugerencias
+              </button>
+              <a
+                href="#"
+                id="template-download-link"
+                class="block text-center text-sm text-indigo-400 hover:text-indigo-300"
+                >Descarga la plantilla</a
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-1"
+                >Guarda tus cambios</label
+              >
+              <button
+                id="download-btn"
+                class="w-full btn btn-success font-bold py-2 px-4 rounded-lg text-sm"
+              >
+                Guardar y Descargar Excel
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="transaction-card" class="card">
+          <h2 class="text-xl font-bold mb-2 text-slate-200">
+            Movimiento Diario
+          </h2>
+          <div class="card-content">
+            <form id="transaction-form" class="space-y-3">
+              <div>
+                <label
+                  for="transaction-type"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Tipo</label
+                >
+                <select id="transaction-type" class="w-full select-field">
+                  <option value="expense">Gasto</option>
+                  <option value="income">Ingreso</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  for="transaction-description"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Descripción</label
+                >
+                <input
+                  type="text"
+                  id="transaction-description"
+                  placeholder="Ej: Supermercado"
+                  class="w-full input-field"
+                  required
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label
+                    for="transaction-amount"
+                    class="block text-xs font-medium text-slate-400 mb-1"
+                    >Monto</label
+                  >
+                  <input
+                    type="number"
+                    id="transaction-amount"
+                    placeholder="Ej: 45000"
+                    class="w-full input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    for="transaction-date"
+                    class="block text-xs font-medium text-slate-400 mb-1"
+                    >Fecha</label
+                  >
+                  <input
+                    type="date"
+                    id="transaction-date"
+                    class="w-full input-field"
+                    required
+                  />
+                </div>
+              </div>
+              <div id="category-section">
+                <label
+                  for="transaction-category"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Categoría</label
+                >
+                <select
+                  id="transaction-category"
+                  class="w-full select-field"
+                  required
+                >
+                  <option value="Gastos Fijos">Gastos Fijos y Básicos</option>
+                  <option value="Gastos Personales">Gastos Personales</option>
+                  <option value="Abono a Deuda">Abono a Deuda</option>
+                  <option value="Ahorro a Metas">Ahorro a Metas</option>
+                  <option value="Ahorro General">Ahorro General</option>
+                  <option value="Gastos Varios">Gastos Varios</option>
+                </select>
+              </div>
+              <div id="debt-payment-section" class="hidden space-y-2">
+                <label
+                  for="debt-select"
+                  class="block text-xs font-medium text-slate-400"
+                  >¿A qué deuda?</label
+                >
+                <select id="debt-select" class="w-full select-field"></select>
+              </div>
+              <div id="goal-payment-section" class="hidden space-y-2">
+                <label
+                  for="goal-select"
+                  class="block text-xs font-medium text-slate-400"
+                  >¿A qué meta?</label
+                >
+                <select id="goal-select" class="w-full select-field"></select>
+              </div>
+              <button
+                type="submit"
+                class="w-full btn btn-primary font-bold py-2 px-3 rounded-lg text-sm"
+              >
+                Añadir Movimiento
+              </button>
+            </form>
+          </div>
+        </div>
+        <div id="debts-card" class="card">
+          <h2 class="text-xl font-bold mb-2 text-slate-200">
+            Gestionar Deudas
+          </h2>
+          <div class="card-content space-y-3">
+            <form id="debt-form" class="space-y-3">
+              <div>
+                <label
+                  for="debt-description"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Descripción</label
+                >
+                <input
+                  type="text"
+                  id="debt-description"
+                  placeholder="Ej: Crédito de consumo"
+                  class="w-full input-field"
+                  required
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label
+                    for="debt-amount"
+                    class="block text-xs font-medium text-slate-400 mb-1"
+                    >Monto Total</label
+                  >
+                  <input
+                    type="number"
+                    id="debt-amount"
+                    placeholder="Ej: 500000"
+                    class="w-full input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    for="debt-date"
+                    class="block text-xs font-medium text-slate-400 mb-1"
+                    >Fecha</label
+                  >
+                  <input
+                    type="date"
+                    id="debt-date"
+                    class="w-full input-field"
+                    required
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="w-full btn btn-primary font-bold py-2 px-3 rounded-lg text-sm"
+              >
+                Añadir Deuda
+              </button>
+            </form>
+            <div class="mt-4 flex-grow flex flex-col">
+              <h3
+                class="text-md font-bold text-slate-300 border-t border-slate-700 pt-2"
+              >
+                Deudas Pendientes
+              </h3>
+              <div
+                id="debt-list"
+                class="space-y-3 flex-grow overflow-y-auto pr-2 mt-2"
+              >
+                <p class="text-slate-500 text-center py-4 text-sm">
+                  No hay deudas.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="goals-card" class="card">
+          <h2 class="text-xl font-bold mb-2 text-slate-200">
+            Gestión de Metas
+          </h2>
+          <div class="card-content space-y-3 flex flex-col">
+            <form id="goal-form" class="space-y-3">
+              <div>
+                <label
+                  for="goal-description"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Descripción de la Meta</label
+                >
+                <input
+                  type="text"
+                  id="goal-description"
+                  placeholder="Ej: Viaje a Europa"
+                  class="w-full input-field"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  for="goal-amount"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Monto Objetivo</label
+                >
+                <input
+                  type="number"
+                  id="goal-amount"
+                  placeholder="Ej: 2000000"
+                  class="w-full input-field"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                class="w-full btn btn-primary font-bold py-2 px-3 rounded-lg text-sm"
+              >
+                Crear Meta
+              </button>
+            </form>
+            <div class="mt-4 flex-grow flex flex-col">
+              <h3
+                class="text-md font-bold text-slate-300 border-t border-slate-700 pt-2"
+              >
+                Mis Metas
+              </h3>
+              <div
+                id="goal-list"
+                class="space-y-3 flex-grow overflow-y-auto pr-2 mt-2"
+              >
+                <p class="text-slate-500 text-center py-4 text-sm">
+                  Aún no has creado metas.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="savings-card" class="card">
+          <h2 class="text-xl font-bold mb-2 text-slate-200">
+            Ahorro Independiente
+          </h2>
+          <div class="card-content space-y-3 flex flex-col">
+            <div class="text-center">
+              <div>
+                <p class="text-lg font-medium text-slate-400">Balance Actual</p>
+                <p
+                  id="independent-savings-balance"
+                  class="text-3xl font-extrabold text-green-400 mt-1"
+                >
+                  $0
+                </p>
+              </div>
+            </div>
+            <form id="savings-form" class="space-y-3">
+              <input type="hidden" id="savings-type" value="Independiente" />
+              <div>
+                <label
+                  for="savings-description"
+                  class="block text-xs font-medium text-slate-400 mb-1"
+                  >Descripción</label
+                >
+                <input
+                  type="text"
+                  id="savings-description"
+                  placeholder="Ej: Ahorro de emergencia"
+                  class="w-full input-field"
+                  required
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label
+                    for="savings-amount"
+                    class="block text-xs font-medium text-slate-400 mb-1"
+                    >Monto</label
+                  >
+                  <input
+                    type="number"
+                    id="savings-amount"
+                    placeholder="Ej: 50000"
+                    class="w-full input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    for="savings-date"
+                    class="block text-xs font-medium text-slate-400 mb-1"
+                    >Fecha</label
+                  >
+                  <input
+                    type="date"
+                    id="savings-date"
+                    class="w-full input-field"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  type="submit"
+                  data-type="deposit"
+                  class="w-full btn btn-success font-bold py-2 px-3 rounded-lg text-sm"
+                >
+                  Depositar
+                </button>
+                <button
+                  type="submit"
+                  data-type="withdrawal"
+                  class="w-full btn btn-danger font-bold py-2 px-3 rounded-lg text-sm"
+                >
+                  Retirar
+                </button>
+              </div>
+            </form>
+            <div class="mt-auto pt-3 border-t border-slate-700">
+              <button
+                id="view-savings-history-btn"
+                class="w-full btn btn-primary py-2 px-4 rounded-lg text-sm"
+              >
+                Ver Historial
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="summary-section"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"
+      >
+        <div class="card p-4 text-center">
+          <h3 class="text-lg font-medium text-slate-400">
+            Ingresos del Período
+          </h3>
+          <p
+            id="total-income"
+            class="text-3xl font-extrabold text-green-400 mt-2"
+          >
+            $0
+          </p>
+        </div>
+        <div class="card p-4 text-center">
+          <h3 class="text-lg font-medium text-slate-400">Gastos del Período</h3>
+          <p
+            id="total-expenses"
+            class="text-3xl font-extrabold text-red-400 mt-2"
+          >
+            $0
+          </p>
+        </div>
+        <div class="card p-4 text-center">
+          <h3 class="text-lg font-medium text-slate-400">
+            Balance del Período
+          </h3>
+          <p
+            id="current-balance"
+            class="text-3xl font-extrabold text-cyan-400 mt-2"
+          >
+            $0
+          </p>
+        </div>
+        <div class="card p-4 text-center">
+          <h3 class="text-lg font-medium text-slate-400">
+            Ahorro Total (Metas+Gral+Indep)
+          </h3>
+          <p
+            id="total-savings"
+            class="text-3xl font-extrabold text-indigo-400 mt-2"
+          >
+            $0
+          </p>
+        </div>
+      </div>
+
+      <div id="analysis-section" class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div class="lg:col-span-3 card p-4">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4"
+          >
+            <h2 class="text-xl font-bold text-slate-200">Análisis Gráfico</h2>
+            <div class="w-full sm:w-auto">
+              <div
+                id="filter-type-selector"
+                class="flex items-center bg-slate-700 rounded-lg p-1 mb-2"
+              >
+                <button
+                  data-filter="day"
+                  class="filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
+                >
+                  Día
+                </button>
+                <button
+                  data-filter="month"
+                  class="filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full tab-active"
+                >
+                  Mes
+                </button>
+                <button
+                  data-filter="year"
+                  class="filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
+                >
+                  Año
+                </button>
+              </div>
+              <div id="filter-inputs">
+                <div id="date-filter-container" class="hidden">
+                  <input
+                    type="date"
+                    id="date-filter"
+                    class="p-2 select-field w-full"
+                  />
+                </div>
+                <div
+                  id="month-year-filter-container"
+                  class="flex items-center gap-2"
+                >
+                  <select
+                    id="month-filter"
+                    class="p-2 select-field w-full"
+                  ></select>
+                  <select
+                    id="year-filter"
+                    class="p-2 select-field w-full"
+                  ></select>
+                </div>
+                <div id="year-only-filter-container" class="hidden">
+                  <select
+                    id="year-only-filter"
+                    class="p-2 select-field w-full"
+                  ></select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="h-80 w-full relative">
+            <canvas id="expenseChart"></canvas>
+            <div
+              id="chart-no-data"
+              class="absolute inset-0 flex items-center justify-center text-slate-400 hidden"
+            >
+              No hay datos de gastos para mostrar en este período.
+            </div>
+          </div>
+        </div>
+        <div class="lg:col-span-2 card p-4">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-xl font-bold text-slate-200">Historial Diario</h2>
+            <p id="filter-display" class="text-sm text-slate-400"></p>
+          </div>
+          <div
+            id="transaction-list"
+            class="space-y-2 flex-grow overflow-y-auto pr-2"
+          >
+            <p class="text-slate-500 text-center py-4">
+              No hay movimientos registrados.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="suggestion-modal"
+      class="fixed top-4 left-4 z-50 card w-full max-w-md hidden !p-4"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <h2
+          id="suggestion-modal-title"
+          class="text-xl font-bold text-slate-200"
+        >
+          Sugerencias
+        </h2>
+        <button
+          id="close-suggestion-modal"
+          class="text-2xl font-bold text-slate-400 hover:text-white"
+        >
+          &times;
+        </button>
+      </div>
+      <div
+        id="suggestion-modal-content"
+        class="space-y-2 max-h-96 overflow-y-auto pr-2"
+      ></div>
+    </div>
+
+    <div
+      id="edit-debt-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-md !p-6">
+        <h2 class="text-2xl font-bold mb-4 text-slate-200">Editar Deuda</h2>
+        <form id="edit-debt-form" class="space-y-4">
+          <input type="hidden" id="edit-debt-id" />
+          <div>
+            <label
+              for="edit-debt-description"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Descripción</label
+            >
+            <input
+              type="text"
+              id="edit-debt-description"
+              class="w-full p-3 input-field"
+              required
+            />
+          </div>
+          <div>
+            <label
+              for="edit-debt-amount"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Monto Total (CLP)</label
+            >
+            <input
+              type="number"
+              id="edit-debt-amount"
+              class="w-full p-3 input-field"
+              required
+            />
+          </div>
+          <div class="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              id="cancel-edit-debt"
+              class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2 rounded-lg btn btn-primary font-bold"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="edit-goal-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-md !p-6">
+        <h2 class="text-2xl font-bold mb-4 text-slate-200">Editar Meta</h2>
+        <form id="edit-goal-form" class="space-y-4">
+          <input type="hidden" id="edit-goal-id" />
+          <div>
+            <label
+              for="edit-goal-description"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Descripción</label
+            >
+            <input
+              type="text"
+              id="edit-goal-description"
+              class="w-full p-3 input-field"
+              required
+            />
+          </div>
+          <div>
+            <label
+              for="edit-goal-target-amount"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Monto Objetivo (CLP)</label
+            >
+            <input
+              type="number"
+              id="edit-goal-target-amount"
+              class="w-full p-3 input-field"
+              required
+            />
+          </div>
+          <div class="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              id="cancel-edit-goal"
+              class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2 rounded-lg btn btn-primary font-bold"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="add-savings-to-goal-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-md !p-6">
+        <h2
+          id="add-savings-to-goal-title"
+          class="text-2xl font-bold mb-4 text-slate-200"
+        >
+          Añadir Ahorro a Meta
+        </h2>
+        <form id="add-savings-to-goal-form" class="space-y-4">
+          <input type="hidden" id="add-savings-goal-id" />
+          <div>
+            <label
+              for="add-savings-goal-amount"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Monto a Añadir (CLP)</label
+            >
+            <input
+              type="number"
+              id="add-savings-goal-amount"
+              class="w-full p-3 input-field"
+              placeholder="Ej: 25000"
+              required
+            />
+          </div>
+          <div>
+            <label
+              for="add-savings-goal-date"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Fecha del Ahorro</label
+            >
+            <input
+              type="date"
+              id="add-savings-goal-date"
+              class="w-full p-3 input-field"
+              required
+            />
+          </div>
+          <div class="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              id="cancel-add-savings-goal"
+              class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2 rounded-lg btn btn-success font-bold"
+            >
+              Añadir Ahorro
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="add-payment-to-debt-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-md !p-6">
+        <h2
+          id="add-payment-to-debt-title"
+          class="text-2xl font-bold mb-4 text-slate-200"
+        >
+          Abonar a Deuda
+        </h2>
+        <form id="add-payment-to-debt-form" class="space-y-4">
+          <input type="hidden" id="add-payment-debt-id" />
+          <div>
+            <label
+              for="add-payment-debt-amount"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Monto a Abonar (CLP)</label
+            >
+            <input
+              type="number"
+              id="add-payment-debt-amount"
+              class="w-full p-3 input-field"
+              placeholder="Ej: 50000"
+              required
+            />
+          </div>
+          <div>
+            <label
+              for="add-payment-debt-date"
+              class="block text-sm font-medium text-slate-400 mb-1"
+              >Fecha del Abono</label
+            >
+            <input
+              type="date"
+              id="add-payment-debt-date"
+              class="w-full p-3 input-field"
+              required
+            />
+          </div>
+          <div class="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              id="cancel-add-payment-debt"
+              class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2 rounded-lg btn btn-success font-bold"
+            >
+              Abonar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="savings-history-modal"
+      class="fixed top-4 left-4 z-50 card w-full max-w-md hidden !p-4"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <h2
+          id="savings-history-modal-title"
+          class="text-xl font-bold text-slate-200"
+        >
+          Historial de Ahorro
+        </h2>
+        <button
+          id="close-savings-history-modal"
+          class="text-2xl font-bold text-slate-400 hover:text-white"
+        >
+          &times;
+        </button>
+      </div>
+      <div
+        id="savings-history-modal-content"
+        class="space-y-2 max-h-96 overflow-y-auto pr-2"
+      ></div>
+    </div>
+
+    <div
+      id="delete-confirm-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
+    >
+      <div class="card w-full max-w-lg !p-6">
+        <h2
+          id="delete-confirm-title"
+          class="text-2xl font-bold mb-4 text-slate-200"
+        >
+          Confirmar Eliminación
+        </h2>
+        <p id="delete-confirm-text" class="text-slate-300 mb-6">
+          ¿Qué deseas hacer con este elemento y sus transacciones asociadas?
+        </p>
+        <div
+          class="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-slate-700"
+        >
+          <button
+            type="button"
+            id="cancel-delete-btn"
+            class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            id="deactivate-btn"
+            class="px-6 py-2 rounded-lg btn btn-primary font-bold"
+          >
+            Solo Desactivar
+          </button>
+          <button
+            type="button"
+            id="delete-full-btn"
+            class="px-6 py-2 rounded-lg btn btn-danger font-bold"
+          >
+            Eliminar por Completo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- Global State ---
+      let transactions = [];
+      let debts = [];
+      let savings = [];
+      let goals = [];
+      let budgetSuggestions = [];
+      let expenseChart = null;
+      let currentFilterType = "month";
+
+      // --- DOM Elements ---
+      const excelUpload = document.getElementById("excel-upload");
+      const downloadBtn = document.getElementById("download-btn");
+      const templateLink = document.getElementById("template-download-link");
+      const suggestionModal = document.getElementById("suggestion-modal");
+      const addSavingsToGoalModal = document.getElementById(
+        "add-savings-to-goal-modal"
+      );
+      const addPaymentToDebtModal = document.getElementById(
+        "add-payment-to-debt-modal"
+      );
+      const editGoalModal = document.getElementById("edit-goal-modal");
+      const editDebtModal = document.getElementById("edit-debt-modal");
+      const savingsHistoryModal = document.getElementById(
+        "savings-history-modal"
+      );
+      const deleteConfirmModal = document.getElementById(
+        "delete-confirm-modal"
+      );
+
+      // --- Initialization ---
+      document.addEventListener("DOMContentLoaded", () => {
+        setupEventListeners();
+        initializeUI();
+      });
+
+      function initializeUI() {
+        populateMonthFilter();
+        populateYearFilters();
+        updateFilterControlsUI();
+        setDefaultDates();
+        toggleDynamicCategorySections();
+        renderAll();
+      }
+
+      function setDefaultDates() {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("savings-date").value = today;
+        document.getElementById("transaction-date").value = today;
+        document.getElementById("debt-date").value = today;
+        document.getElementById("add-savings-goal-date").value = today;
+        document.getElementById("add-payment-debt-date").value = today;
+      }
+
+      // --- Event Listeners ---
+      function setupEventListeners() {
+        excelUpload.addEventListener("change", handleFileUpload);
+        downloadBtn.addEventListener("click", saveAndDownloadExcel);
+        templateLink.addEventListener("click", downloadTemplate);
+
+        document
+          .getElementById("savings-form")
+          .addEventListener("submit", handleAddSavingsTransaction);
+        document
+          .getElementById("transaction-form")
+          .addEventListener("submit", handleAddTransaction);
+        document
+          .getElementById("transaction-type")
+          .addEventListener("change", toggleCategorySection);
+        document
+          .getElementById("transaction-category")
+          .addEventListener("change", toggleDynamicCategorySections);
+
+        document
+          .getElementById("debt-form")
+          .addEventListener("submit", handleAddDebt);
+        document
+          .getElementById("goal-form")
+          .addEventListener("submit", handleAddGoal);
+
+        document
+          .getElementById("filter-type-selector")
+          .addEventListener("click", handleFilterTypeChange);
+        document
+          .getElementById("date-filter")
+          .addEventListener("change", renderAll);
+        document
+          .getElementById("month-filter")
+          .addEventListener("change", renderAll);
+        document
+          .getElementById("year-filter")
+          .addEventListener("change", renderAll);
+        document
+          .getElementById("year-only-filter")
+          .addEventListener("change", renderAll);
+
+        document
+          .getElementById("debt-list")
+          .addEventListener("click", handleDebtListClicks);
+        document
+          .getElementById("edit-debt-form")
+          .addEventListener("submit", handleUpdateDebt);
+        document
+          .getElementById("cancel-edit-debt")
+          .addEventListener("click", () =>
+            editDebtModal.classList.add("hidden")
+          );
+        document
+          .getElementById("add-payment-to-debt-form")
+          .addEventListener("submit", handleAddPaymentToDebt);
+        document
+          .getElementById("cancel-add-payment-debt")
+          .addEventListener("click", () =>
+            addPaymentToDebtModal.classList.add("hidden")
+          );
+
+        document
+          .getElementById("goal-list")
+          .addEventListener("click", handleGoalListClicks);
+        document
+          .getElementById("edit-goal-form")
+          .addEventListener("submit", handleUpdateGoal);
+        document
+          .getElementById("cancel-edit-goal")
+          .addEventListener("click", closeEditGoalModal);
+        document
+          .getElementById("add-savings-to-goal-form")
+          .addEventListener("submit", handleAddSavingsToGoal);
+        document
+          .getElementById("cancel-add-savings-goal")
+          .addEventListener("click", closeAddSavingsToGoalModal);
+
+        document
+          .getElementById("view-suggestions-btn")
+          .addEventListener("click", showAllSuggestions);
+        document
+          .getElementById("close-suggestion-modal")
+          .addEventListener("click", () =>
+            suggestionModal.classList.add("hidden")
+          );
+
+        document
+          .getElementById("view-savings-history-btn")
+          .addEventListener("click", showSavingsHistory);
+        document
+          .getElementById("close-savings-history-modal")
+          .addEventListener("click", () =>
+            savingsHistoryModal.classList.add("hidden")
+          );
+
+        document
+          .getElementById("cancel-delete-btn")
+          .addEventListener("click", () =>
+            deleteConfirmModal.classList.add("hidden")
+          );
+        document
+          .getElementById("deactivate-btn")
+          .addEventListener("click", handleDeactivate);
+        document
+          .getElementById("delete-full-btn")
+          .addEventListener("click", handleFullDelete);
+      }
+
+      // --- Excel & Data Handling ---
+      function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        document.getElementById("file-name").textContent = `${file.name}`;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array", cellDates: true });
+
+          transactions = workbook.Sheets["Transactions"]
+            ? XLSX.utils.sheet_to_json(workbook.Sheets["Transactions"])
+            : [];
+          debts = workbook.Sheets["Debts"]
+            ? XLSX.utils.sheet_to_json(workbook.Sheets["Debts"])
+            : [];
+          savings = workbook.Sheets["Savings"]
+            ? XLSX.utils.sheet_to_json(workbook.Sheets["Savings"])
+            : [];
+          goals = workbook.Sheets["Goals"]
+            ? XLSX.utils.sheet_to_json(workbook.Sheets["Goals"])
+            : [];
+          budgetSuggestions = workbook.Sheets["Suggestions"]
+            ? XLSX.utils.sheet_to_json(workbook.Sheets["Suggestions"])
+            : [];
+
+          [
+            ...transactions,
+            ...debts,
+            ...savings,
+            ...goals,
+            ...budgetSuggestions,
+          ].forEach((item) => {
+            for (const key in item) {
+              if (
+                key.toLowerCase().includes("date") &&
+                item[key] &&
+                !(item[key] instanceof Date)
+              ) {
+                item[key] = new Date(item[key]);
+              }
+              if (
+                key.toLowerCase().includes("amount") ||
+                key.toLowerCase().includes("balance")
+              ) {
+                if (item[key]) item[key] = parseFloat(item[key]);
+              }
+            }
+          });
+
+          debts.forEach((d) => (d.isActive = d.isActive ?? true));
+          goals.forEach((g) => (g.isActive = g.isActive ?? true));
+
+          initializeUI();
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function saveAndDownloadExcel() {
+        const newWorkbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(
+          newWorkbook,
+          XLSX.utils.json_to_sheet(transactions),
+          "Transactions"
+        );
+        XLSX.utils.book_append_sheet(
+          newWorkbook,
+          XLSX.utils.json_to_sheet(debts),
+          "Debts"
+        );
+        XLSX.utils.book_append_sheet(
+          newWorkbook,
+          XLSX.utils.json_to_sheet(savings),
+          "Savings"
+        );
+        XLSX.utils.book_append_sheet(
+          newWorkbook,
+          XLSX.utils.json_to_sheet(goals),
+          "Goals"
+        );
+        XLSX.utils.book_append_sheet(
+          newWorkbook,
+          XLSX.utils.json_to_sheet(budgetSuggestions),
+          "Suggestions"
+        );
+        XLSX.writeFile(newWorkbook, "GestorFinanciero_Actualizado.xlsx");
+      }
+
+      function downloadTemplate(e) {
+        e.preventDefault();
+        const headers = {
+          Transactions: [
+            [
+              "ID",
+              "Type",
+              "Description",
+              "Amount",
+              "Category",
+              "Date",
+              "linkedDebtId",
+              "linkedGoalId",
+            ],
+          ],
+          Debts: [
+            [
+              "ID",
+              "Description",
+              "TotalAmount",
+              "CurrentBalance",
+              "Date",
+              "isActive",
+            ],
+          ],
+          Savings: [["ID", "Type", "Description", "Amount", "Date"]],
+          Goals: [
+            [
+              "ID",
+              "Description",
+              "TargetAmount",
+              "CurrentAmount",
+              "Date",
+              "isActive",
+            ],
+          ],
+          Suggestions: [
+            [
+              "ID",
+              "Description",
+              "Amount",
+              "Date",
+              "SuggestedSavings",
+              "SuggestedNeeds",
+              "SuggestedWants",
+            ],
+          ],
+        };
+        const workbook = XLSX.utils.book_new();
+        for (const sheetName in headers) {
+          const sheet = XLSX.utils.aoa_to_sheet(headers[sheetName]);
+          XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
+        }
+        XLSX.writeFile(workbook, "Plantilla_GestorFinanciero.xlsx");
+      }
+
+      // --- Core Logic ---
+      function handleAddTransaction(e) {
+        e.preventDefault();
+        const type = document.getElementById("transaction-type").value;
+        let description = document.getElementById(
+          "transaction-description"
+        ).value;
+        const amount = parseFloat(
+          document.getElementById("transaction-amount").value
+        );
+        const category = document.getElementById("transaction-category").value;
+        const dateValue = document.getElementById("transaction-date").value;
+        if (!description || isNaN(amount) || amount <= 0) return;
+
+        const transactionDate = dateValue
+          ? new Date(dateValue + "T00:00:00")
+          : new Date();
+        let linkedIdProperty = {};
+
+        if (type === "income") {
+          const suggestion = {
+            ID: Date.now(),
+            Description: description,
+            Amount: amount,
+            Date: transactionDate,
+            SuggestedSavings: amount * 0.5,
+            SuggestedNeeds: amount * 0.3,
+            SuggestedWants: amount * 0.2,
+          };
+          budgetSuggestions.push(suggestion);
+          showSingleSuggestion(suggestion);
+        }
+
+        if (category === "Abono a Deuda") {
+          const debtId = document.getElementById("debt-select").value;
+          const debt = debts.find((d) => d.ID == debtId);
+          if (debt) {
+            debt.CurrentBalance = Math.max(0, debt.CurrentBalance - amount);
+            if (
+              description.trim().toLowerCase() === "abono a deuda" ||
+              description.trim() === ""
+            ) {
+              description = `Abono a: ${debt.Description}`;
+            }
+            linkedIdProperty = { linkedDebtId: debt.ID };
+          }
+        } else if (category === "Ahorro a Metas") {
+          const goalId = document.getElementById("goal-select").value;
+          const goal = goals.find((g) => g.ID == goalId);
+          if (goal) {
+            goal.CurrentAmount = Math.min(
+              goal.TargetAmount,
+              goal.CurrentAmount + amount
+            );
+            if (
+              description.trim().toLowerCase() === "ahorro a meta" ||
+              description.trim() === ""
+            ) {
+              description = `Ahorro para: ${goal.Description}`;
+            }
+            linkedIdProperty = { linkedGoalId: goal.ID };
+          }
+        }
+
+        transactions.push({
+          ID: Date.now(),
+          Type: type,
+          Description: description,
+          Amount: amount,
+          Category: type === "income" ? "Ingreso" : category,
+          Date: transactionDate,
+          ...linkedIdProperty,
+        });
+
+        document.getElementById("transaction-form").reset();
+        setDefaultDates();
+        toggleCategorySection();
+        toggleDynamicCategorySections();
+        renderAll();
+      }
+
+      function handleAddDebt(e) {
+        e.preventDefault();
+        const description = document.getElementById("debt-description").value;
+        const amount = parseFloat(document.getElementById("debt-amount").value);
+        const dateValue = document.getElementById("debt-date").value;
+        if (!description || isNaN(amount) || amount <= 0) return;
+
+        debts.push({
+          ID: Date.now(),
+          Description: description,
+          TotalAmount: amount,
+          CurrentBalance: amount,
+          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          isActive: true,
+        });
+        document.getElementById("debt-form").reset();
+        setDefaultDates();
+        renderAll();
+      }
+
+      function handleUpdateDebt(e) {
+        e.preventDefault();
+        const debtId = document.getElementById("edit-debt-id").value;
+        const debt = debts.find((d) => d.ID == debtId);
+        if (debt) {
+          const newDescription = document.getElementById(
+            "edit-debt-description"
+          ).value;
+          const newTotalAmount = parseFloat(
+            document.getElementById("edit-debt-amount").value
+          );
+          const amountPaid = debt.TotalAmount - debt.CurrentBalance;
+          debt.Description = newDescription;
+          debt.TotalAmount = newTotalAmount;
+          debt.CurrentBalance = Math.max(0, newTotalAmount - amountPaid);
+        }
+        editDebtModal.classList.add("hidden");
+        renderAll();
+      }
+
+      function handleAddPaymentToDebt(e) {
+        e.preventDefault();
+        const debtId = document.getElementById("add-payment-debt-id").value;
+        const amount = parseFloat(
+          document.getElementById("add-payment-debt-amount").value
+        );
+        const dateValue = document.getElementById(
+          "add-payment-debt-date"
+        ).value;
+        if (isNaN(amount) || amount <= 0 || !debtId) return;
+
+        const debt = debts.find((d) => d.ID == debtId);
+        if (!debt) return;
+
+        debt.CurrentBalance = Math.max(0, debt.CurrentBalance - amount);
+        transactions.push({
+          ID: Date.now(),
+          Type: "expense",
+          Description: `Abono a: ${debt.Description}`,
+          Amount: amount,
+          Category: "Abono a Deuda",
+          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          linkedDebtId: debt.ID,
+        });
+
+        addPaymentToDebtModal.classList.add("hidden");
+        renderAll();
+      }
+
+      function handleAddGoal(e) {
+        e.preventDefault();
+        const description = document.getElementById("goal-description").value;
+        const targetAmount = parseFloat(
+          document.getElementById("goal-amount").value
+        );
+        if (!description || isNaN(targetAmount) || targetAmount <= 0) return;
+
+        goals.push({
+          ID: Date.now(),
+          Description: description,
+          TargetAmount: targetAmount,
+          CurrentAmount: 0,
+          Date: new Date(),
+          isActive: true,
+        });
+        document.getElementById("goal-form").reset();
+        renderAll();
+      }
+
+      function handleUpdateGoal(e) {
+        e.preventDefault();
+        const goalId = document.getElementById("edit-goal-id").value;
+        const goal = goals.find((g) => g.ID == goalId);
+        if (goal) {
+          goal.Description = document.getElementById(
+            "edit-goal-description"
+          ).value;
+          goal.TargetAmount = parseFloat(
+            document.getElementById("edit-goal-target-amount").value
+          );
+        }
+        closeEditGoalModal();
+        renderAll();
+      }
+
+      function handleAddSavingsToGoal(e) {
+        e.preventDefault();
+        const goalId = document.getElementById("add-savings-goal-id").value;
+        const amount = parseFloat(
+          document.getElementById("add-savings-goal-amount").value
+        );
+        const dateValue = document.getElementById(
+          "add-savings-goal-date"
+        ).value;
+        if (isNaN(amount) || amount <= 0 || !goalId) return;
+
+        const goal = goals.find((g) => g.ID == goalId);
+        if (!goal) return;
+
+        goal.CurrentAmount = Math.min(
+          goal.TargetAmount,
+          goal.CurrentAmount + amount
+        );
+        transactions.push({
+          ID: Date.now(),
+          Type: "expense",
+          Description: `Ahorro para: ${goal.Description}`,
+          Amount: amount,
+          Category: "Ahorro a Metas",
+          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          linkedGoalId: goal.ID,
+        });
+
+        closeAddSavingsToGoalModal();
+        renderAll();
+      }
+
+      function handleAddSavingsTransaction(e) {
+        e.preventDefault();
+        const type = e.submitter.dataset.type;
+        const description = document.getElementById(
+          "savings-description"
+        ).value;
+        const amount = parseFloat(
+          document.getElementById("savings-amount").value
+        );
+        const dateValue = document.getElementById("savings-date").value;
+        if (!description || isNaN(amount) || amount <= 0) return;
+
+        savings.push({
+          ID: Date.now(),
+          Type: type,
+          Description: description,
+          Amount: amount,
+          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+        });
+        document.getElementById("savings-form").reset();
+        setDefaultDates();
+        renderAll();
+      }
+
+      // --- UI Rendering & Filtering ---
+      function renderAll() {
+        const filteredTransactions = getFilteredTransactions();
+
+        updateSummary(filteredTransactions);
+        renderTransactionList(filteredTransactions);
+        renderDebts();
+        renderSavings();
+        renderGoals();
+
+        const activeGoalIds = new Set(
+          goals.filter((g) => g.isActive ?? true).map((g) => g.ID)
+        );
+        const activeDebtIds = new Set(
+          debts.filter((d) => d.isActive ?? true).map((d) => d.ID)
+        );
+
+        const expensesForChart = filteredTransactions.filter((t) => {
+          if (t.Type !== "expense") return false;
+          if (t.linkedGoalId != null) return activeGoalIds.has(t.linkedGoalId);
+          if (t.linkedDebtId != null) return activeDebtIds.has(t.linkedDebtId);
+          return true;
+        });
+        updateChart(expensesForChart);
+      }
+
+      function getFilteredTransactions() {
+        let startDate, endDate;
+        const filterDisplay = document.getElementById("filter-display");
+
+        switch (currentFilterType) {
+          case "day":
+            const dateValue =
+              document.getElementById("date-filter").value ||
+              new Date().toISOString().split("T")[0];
+            startDate = new Date(dateValue + "T00:00:00");
+            endDate = new Date(dateValue + "T23:59:59");
+            filterDisplay.textContent = startDate.toLocaleDateString("es-CL");
+            break;
+          case "month":
+            const month = parseInt(
+              document.getElementById("month-filter").value
+            );
+            const yearMonth = parseInt(
+              document.getElementById("year-filter").value
+            );
+            startDate = new Date(yearMonth, month, 1);
+            endDate = new Date(yearMonth, month + 1, 0, 23, 59, 59, 999);
+            filterDisplay.textContent = `${
+              document.querySelector(`#month-filter option[value='${month}']`)
+                .textContent
+            } ${yearMonth}`;
+            break;
+          case "year":
+            const year = parseInt(
+              document.getElementById("year-only-filter").value
+            );
+            startDate = new Date(year, 0, 1);
+            endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+            filterDisplay.textContent = `Año ${year}`;
+            break;
+        }
+
+        return transactions.filter(
+          (t) => new Date(t.Date) >= startDate && new Date(t.Date) <= endDate
+        );
+      }
+
+      function updateSummary(filtered) {
+        const totalIncome = filtered
+          .filter((t) => t.Type === "income")
+          .reduce((sum, t) => sum + t.Amount, 0);
+        const totalExpenses = filtered
+          .filter((t) => t.Type === "expense")
+          .reduce((sum, t) => sum + t.Amount, 0);
+
+        const totalGoalSavings = goals
+          .filter((g) => (g.isActive ?? true) === true)
+          .reduce((sum, g) => sum + g.CurrentAmount, 0);
+
+        const independentDeposits = savings
+          .filter((s) => s.Type === "deposit")
+          .reduce((sum, s) => sum + s.Amount, 0);
+        const independentWithdrawals = savings
+          .filter((s) => s.Type === "withdrawal")
+          .reduce((sum, s) => sum + s.Amount, 0);
+        const totalNormalSavings = transactions
+          .filter(
+            (t) => t.Type === "expense" && t.Category === "Ahorro General"
+          )
+          .reduce((sum, t) => sum + t.Amount, 0);
+
+        const formatter = new Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        });
+        document.getElementById("total-income").textContent =
+          formatter.format(totalIncome);
+        document.getElementById("total-expenses").textContent =
+          formatter.format(totalExpenses);
+        document.getElementById("current-balance").textContent =
+          formatter.format(totalIncome - totalExpenses);
+
+        const totalSavingsAmount =
+          totalGoalSavings +
+          (independentDeposits - independentWithdrawals) +
+          totalNormalSavings;
+        document.getElementById("total-savings").textContent =
+          formatter.format(totalSavingsAmount);
+      }
+
+      function renderTransactionList(filtered) {
+        const listEl = document.getElementById("transaction-list");
+        listEl.innerHTML = "";
+
+        const inactiveGoalIds = new Set(
+          goals.filter((g) => (g.isActive ?? true) === false).map((g) => g.ID)
+        );
+        const inactiveDebtIds = new Set(
+          debts.filter((d) => (d.isActive ?? true) === false).map((d) => d.ID)
+        );
+
+        if (filtered.length === 0) {
+          listEl.innerHTML =
+            '<p class="text-slate-500 text-center py-4 text-sm">No hay movimientos en este período.</p>';
+          return;
+        }
+        filtered
+          .sort((a, b) => new Date(b.Date) - new Date(a.Date))
+          .forEach((t) => {
+            const isExpense = t.Type === "expense";
+            const formatter = new Intl.NumberFormat("es-CL", {
+              style: "currency",
+              currency: "CLP",
+            });
+
+            let isInactiveLink =
+              (t.linkedGoalId != null && inactiveGoalIds.has(t.linkedGoalId)) ||
+              (t.linkedDebtId != null && inactiveDebtIds.has(t.linkedDebtId));
+
+            const item = document.createElement("div");
+            item.className = `flex justify-between items-center p-2 bg-slate-700/50 rounded-lg text-sm ${
+              isInactiveLink ? "item-inactive" : ""
+            }`;
+            item.innerHTML = `
+                    <div>
+                        <p class="font-semibold text-slate-200">${
+                          t.Description
+                        }</p>
+                        <p class="text-xs text-slate-400">${
+                          t.Category
+                        } - ${new Date(t.Date).toLocaleDateString("es-CL")} ${
+              isInactiveLink ? "(Desactivado)" : ""
+            }</p>
+                    </div>
+                    <span class="font-bold ${
+                      isExpense ? "text-red-400" : "text-green-400"
+                    }">${isExpense ? "-" : "+"}${formatter.format(
+              t.Amount
+            )}</span>
+                `;
+            listEl.appendChild(item);
+          });
+      }
+
+      function renderDebts() {
+        const debtList = document.getElementById("debt-list");
+        const debtSelect = document.getElementById("debt-select");
+        debtList.innerHTML = "";
+        debtSelect.innerHTML =
+          '<option value="">Selecciona una deuda...</option>';
+
+        const activeDebts = debts.filter(
+          (d) => (d.isActive ?? true) && d.CurrentBalance > 0
+        );
+        activeDebts.forEach((d) => {
+          debtSelect.innerHTML += `<option value="${d.ID}">${d.Description}</option>`;
+        });
+
+        if (debts.length === 0) {
+          debtList.innerHTML =
+            '<p class="text-slate-500 text-center py-4 text-sm">No hay deudas.</p>';
+        } else {
+          debts
+            .sort((a, b) => (a.isActive === false) - (b.isActive === false))
+            .forEach((debt) => {
+              const isActive = debt.isActive ?? true;
+              const formatter = new Intl.NumberFormat("es-CL", {
+                style: "currency",
+                currency: "CLP",
+              });
+              const progress =
+                debt.TotalAmount > 0
+                  ? ((debt.TotalAmount - debt.CurrentBalance) /
+                      debt.TotalAmount) *
+                    100
+                  : 100;
+
+              let buttonsHtml = "";
+              if (isActive) {
+                buttonsHtml = `
+                            <button class="edit-debt-btn text-slate-400 hover:text-indigo-400" data-id="${debt.ID}" title="Editar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <button class="delete-debt-btn text-slate-400 hover:text-red-400" data-id="${debt.ID}" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <button class="add-payment-debt-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${debt.ID}">Abonar</button>`;
+              } else {
+                buttonsHtml = `<button class="reactivate-debt-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${debt.ID}">Reactivar</button>`;
+              }
+
+              const item = document.createElement("div");
+              item.className = `debt-item space-y-2 text-sm p-2 bg-slate-700/50 rounded-lg ${
+                !isActive ? "item-inactive" : ""
+              }`;
+              item.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <p class="font-semibold text-slate-200 flex-1 mr-2 truncate description-text">${
+                              debt.Description
+                            }</p>
+                            <div class="flex items-center gap-2">${buttonsHtml}</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                <span>${formatter.format(
+                                  debt.CurrentBalance
+                                )}</span>
+                                <span class="font-medium">${formatter.format(
+                                  debt.TotalAmount
+                                )}</span>
+                            </div>
+                            <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full" style="width: ${progress}%"></div></div>
+                        </div>
+                    `;
+              debtList.appendChild(item);
+            });
+        }
+      }
+
+      function renderSavings() {
+        const independentDeposits = savings
+          .filter((s) => s.Type === "deposit")
+          .reduce((sum, s) => sum + s.Amount, 0);
+        const independentWithdrawals = savings
+          .filter((s) => s.Type === "withdrawal")
+          .reduce((sum, s) => sum + s.Amount, 0);
+        document.getElementById("independent-savings-balance").textContent =
+          new Intl.NumberFormat("es-CL", {
+            style: "currency",
+            currency: "CLP",
+          }).format(independentDeposits - independentWithdrawals);
+      }
+
+      function renderGoals() {
+        const goalListEl = document.getElementById("goal-list");
+        const goalSelectEl = document.getElementById("goal-select");
+        goalListEl.innerHTML = "";
+        goalSelectEl.innerHTML =
+          '<option value="">Selecciona una meta...</option>';
+
+        const activeGoals = goals.filter(
+          (g) => (g.isActive ?? true) && g.CurrentAmount < g.TargetAmount
+        );
+        activeGoals.forEach((g) => {
+          goalSelectEl.innerHTML += `<option value="${g.ID}">${g.Description}</option>`;
+        });
+
+        if (goals.length === 0) {
+          goalListEl.innerHTML =
+            '<p class="text-slate-500 text-center py-4 text-sm">Aún no has creado metas.</p>';
+        } else {
+          goals
+            .sort((a, b) => (a.isActive === false) - (b.isActive === false))
+            .forEach((goal) => {
+              const isActive = goal.isActive ?? true;
+              const formatter = new Intl.NumberFormat("es-CL", {
+                style: "currency",
+                currency: "CLP",
+              });
+              const progress =
+                goal.TargetAmount > 0
+                  ? (goal.CurrentAmount / goal.TargetAmount) * 100
+                  : 0;
+
+              let buttonsHtml = "";
+              if (isActive) {
+                buttonsHtml = `
+                             <button class="edit-goal-btn text-slate-400 hover:text-indigo-400" data-id="${goal.ID}" title="Editar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <button class="delete-goal-btn text-slate-400 hover:text-red-400" data-id="${goal.ID}" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                             <button class="add-savings-goal-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${goal.ID}">Abonar</button>`;
+              } else {
+                buttonsHtml = `<button class="reactivate-goal-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${goal.ID}">Reactivar</button>`;
+              }
+
+              const item = document.createElement("div");
+              item.className = `goal-item space-y-2 text-sm p-2 bg-slate-700/50 rounded-lg ${
+                !isActive ? "item-inactive" : ""
+              }`;
+              item.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <p class="font-semibold text-slate-200 flex-1 mr-2 truncate description-text">${
+                              goal.Description
+                            }</p>
+                            <div class="flex items-center gap-2">${buttonsHtml}</div>
+                        </div>
+                        <div>
+                             <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                <span>${formatter.format(
+                                  goal.CurrentAmount
+                                )}</span>
+                                <span class="font-medium">${formatter.format(
+                                  goal.TargetAmount
+                                )}</span>
+                            </div>
+                            <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full bg-green-500" style="width: ${progress}%"></div></div>
+                        </div>
+                    `;
+              goalListEl.appendChild(item);
+            });
+        }
+      }
+
+      function updateChart(expenses) {
+        const chartNoData = document.getElementById("chart-no-data");
+        const expenseCanvas = document.getElementById("expenseChart");
+        const ctx = expenseCanvas.getContext("2d");
+        if (expenseChart) expenseChart.destroy();
+
+        const categoryData = expenses.reduce((acc, expense) => {
+          acc[expense.Category] = (acc[expense.Category] || 0) + expense.Amount;
+          return acc;
+        }, {});
+
+        if (Object.keys(categoryData).length === 0) {
+          chartNoData.classList.remove("hidden");
+          expenseCanvas.classList.add("hidden");
+          return;
+        }
+
+        chartNoData.classList.add("hidden");
+        expenseCanvas.classList.remove("hidden");
+
+        expenseChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: Object.keys(categoryData),
+            datasets: [
+              {
+                data: Object.values(categoryData),
+                backgroundColor: [
+                  "#facc15",
+                  "#34d399",
+                  "#60a5fa",
+                  "#a78bfa",
+                  "#f472b6",
+                  "#fb923c",
+                  "#818cf8",
+                  "#2dd4bf",
+                ],
+                borderColor: "#1e293b",
+                borderWidth: 4,
+                hoverOffset: 8,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "70%",
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#94a3b8",
+                  font: { size: 14, family: "'Inter', sans-serif" },
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: (c) =>
+                    `${c.label}: ${new Intl.NumberFormat("es-CL", {
+                      style: "currency",
+                      currency: "CLP",
+                    }).format(c.parsed)}`,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // --- UI Helpers & Modals ---
+      function showSingleSuggestion(suggestion) {
+        const formatter = new Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        });
+        const content = document.getElementById("suggestion-modal-content");
+        document.getElementById("suggestion-modal-title").textContent =
+          "Sugerencia de Ingreso";
+        content.innerHTML = `
+                <div class="p-2 bg-slate-700/50 rounded-lg">
+                    <p class="font-bold text-slate-200">${
+                      suggestion.Description
+                    }</p>
+                    <p class="text-sm text-slate-400">Monto: ${formatter.format(
+                      suggestion.Amount
+                    )}</p>
+                </div>
+                <div class="space-y-1 text-sm mt-2">
+                    <p><span class="font-medium text-green-400">50% Ahorro:</span> ${formatter.format(
+                      suggestion.SuggestedSavings
+                    )}</p>
+                    <p><span class="font-medium text-yellow-400">30% G. Fijos:</span> ${formatter.format(
+                      suggestion.SuggestedNeeds
+                    )}</p>
+                    <p><span class="font-medium text-blue-400">20% G. Personales:</span> ${formatter.format(
+                      suggestion.SuggestedWants
+                    )}</p>
+                </div>`;
+        suggestionModal.classList.remove("hidden");
+      }
+
+      function showAllSuggestions() {
+        const formatter = new Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        });
+        const content = document.getElementById("suggestion-modal-content");
+        document.getElementById("suggestion-modal-title").textContent =
+          "Historial de Sugerencias";
+        content.innerHTML =
+          budgetSuggestions.length === 0
+            ? '<p class="text-slate-400 text-center">No hay sugerencias registradas.</p>'
+            : budgetSuggestions
+                .slice()
+                .sort((a, b) => new Date(b.Date) - new Date(a.Date))
+                .map(
+                  (s) => `
+                    <div class="p-2 bg-slate-700/50 rounded-lg mb-3">
+                        <div class="flex justify-between items-baseline">
+                            <p class="font-bold text-slate-200">${
+                              s.Description
+                            }</p>
+                            <p class="text-xs text-slate-400">${new Date(
+                              s.Date
+                            ).toLocaleDateString("es-CL")}</p>
+                        </div>
+                        <p class="text-sm text-slate-300 font-semibold">Monto: ${formatter.format(
+                          s.Amount
+                        )}</p>
+                        <div class="text-xs mt-1 border-t border-slate-600 pt-1">
+                            <p><span class="text-green-400">Ahorro:</span> ${formatter.format(
+                              s.SuggestedSavings
+                            )}</p>
+                            <p><span class="text-yellow-400">G. Fijos:</span> ${formatter.format(
+                              s.SuggestedNeeds
+                            )}</p>
+                            <p><span class="text-blue-400">G. Personales:</span> ${formatter.format(
+                              s.SuggestedWants
+                            )}</p>
+                        </div>
+                    </div>`
+                )
+                .join("");
+        suggestionModal.classList.remove("hidden");
+      }
+
+      function showSavingsHistory() {
+        const content = document.getElementById(
+          "savings-history-modal-content"
+        );
+        const formatter = new Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        });
+
+        if (savings.length === 0) {
+          content.innerHTML =
+            '<p class="text-slate-400 text-center">No hay historial de ahorros.</p>';
+        } else {
+          content.innerHTML = savings
+            .slice()
+            .sort((a, b) => new Date(b.Date) - new Date(a.Date))
+            .map((s) => {
+              const isDeposit = s.Type === "deposit";
+              return `
+                            <div class="flex justify-between items-center p-2 bg-slate-700/50 rounded-lg mb-2 text-sm">
+                                <div>
+                                    <p class="font-semibold text-slate-200">${
+                                      s.Description
+                                    }</p>
+                                    <p class="text-xs text-slate-400">${new Date(
+                                      s.Date
+                                    ).toLocaleDateString("es-CL")}</p>
+                                </div>
+                                <span class="font-bold ${
+                                  isDeposit ? "text-green-400" : "text-red-400"
+                                }">
+                                    ${isDeposit ? "+" : "-"}${formatter.format(
+                s.Amount
+              )}
+                                </span>
+                            </div>`;
+            })
+            .join("");
+        }
+        savingsHistoryModal.classList.remove("hidden");
+      }
+
+      function toggleCategorySection() {
+        const isIncome =
+          document.getElementById("transaction-type").value === "income";
+        document
+          .getElementById("category-section")
+          .classList.toggle("hidden", isIncome);
+        if (isIncome) {
+          document
+            .getElementById("debt-payment-section")
+            .classList.add("hidden");
+          document
+            .getElementById("goal-payment-section")
+            .classList.add("hidden");
+        }
+      }
+
+      function toggleDynamicCategorySections() {
+        const category = document.getElementById("transaction-category").value;
+        document
+          .getElementById("debt-payment-section")
+          .classList.toggle("hidden", category !== "Abono a Deuda");
+        document
+          .getElementById("goal-payment-section")
+          .classList.toggle("hidden", category !== "Ahorro a Metas");
+      }
+
+      function handleDebtListClicks(e) {
+        const editButton = e.target.closest(".edit-debt-btn");
+        const paymentButton = e.target.closest(".add-payment-debt-btn");
+        const deleteButton = e.target.closest(".delete-debt-btn");
+        const reactivateButton = e.target.closest(".reactivate-debt-btn");
+
+        if (reactivateButton) {
+          const debt = debts.find((d) => d.ID == reactivateButton.dataset.id);
+          if (debt) debt.isActive = true;
+          renderAll();
+        } else if (deleteButton) {
+          const debt = debts.find((d) => d.ID == deleteButton.dataset.id);
+          if (debt) openDeleteConfirmModal("deuda", debt.ID, debt.Description);
+        } else if (editButton) {
+          const debt = debts.find((d) => d.ID == editButton.dataset.id);
+          if (debt) openEditDebtModal(debt);
+        } else if (paymentButton) {
+          const debt = debts.find((d) => d.ID == paymentButton.dataset.id);
+          if (debt) openAddPaymentToDebtModal(debt);
+        }
+      }
+
+      function openEditDebtModal(debt) {
+        document.getElementById("edit-debt-id").value = debt.ID;
+        document.getElementById("edit-debt-description").value =
+          debt.Description;
+        document.getElementById("edit-debt-amount").value = debt.TotalAmount;
+        editDebtModal.classList.remove("hidden");
+      }
+
+      function openAddPaymentToDebtModal(debt) {
+        document.getElementById("add-payment-to-debt-form").reset();
+        setDefaultDates();
+        document.getElementById("add-payment-debt-id").value = debt.ID;
+        document.getElementById(
+          "add-payment-to-debt-title"
+        ).textContent = `Abonar a "${debt.Description}"`;
+        addPaymentToDebtModal.classList.remove("hidden");
+      }
+
+      function handleGoalListClicks(e) {
+        const savingsButton = e.target.closest(".add-savings-goal-btn");
+        const editButton = e.target.closest(".edit-goal-btn");
+        const deleteButton = e.target.closest(".delete-goal-btn");
+        const reactivateButton = e.target.closest(".reactivate-goal-btn");
+
+        if (reactivateButton) {
+          const goal = goals.find((g) => g.ID == reactivateButton.dataset.id);
+          if (goal) goal.isActive = true;
+          renderAll();
+        } else if (deleteButton) {
+          const goal = goals.find((g) => g.ID == deleteButton.dataset.id);
+          if (goal) openDeleteConfirmModal("meta", goal.ID, goal.Description);
+        } else if (savingsButton) {
+          const goal = goals.find((g) => g.ID == savingsButton.dataset.id);
+          if (goal) openAddSavingsToGoalModal(goal);
+        } else if (editButton) {
+          const goal = goals.find((g) => g.ID == editButton.dataset.id);
+          if (goal) openEditGoalModal(goal);
+        }
+      }
+
+      function openAddSavingsToGoalModal(goal) {
+        document.getElementById("add-savings-to-goal-form").reset();
+        setDefaultDates();
+        document.getElementById("add-savings-goal-id").value = goal.ID;
+        document.getElementById(
+          "add-savings-to-goal-title"
+        ).textContent = `Añadir Ahorro a "${goal.Description}"`;
+        addSavingsToGoalModal.classList.remove("hidden");
+      }
+
+      function closeAddSavingsToGoalModal() {
+        addSavingsToGoalModal.classList.add("hidden");
+      }
+
+      function openEditGoalModal(goal) {
+        document.getElementById("edit-goal-id").value = goal.ID;
+        document.getElementById("edit-goal-description").value =
+          goal.Description;
+        document.getElementById("edit-goal-target-amount").value =
+          goal.TargetAmount;
+        editGoalModal.classList.remove("hidden");
+      }
+
+      function closeEditGoalModal() {
+        editGoalModal.classList.add("hidden");
+      }
+
+      function openDeleteConfirmModal(type, id, description) {
+        deleteConfirmModal.dataset.type = type;
+        deleteConfirmModal.dataset.id = id;
+        document.getElementById(
+          "delete-confirm-title"
+        ).textContent = `Eliminar ${type}: "${description}"`;
+        const text =
+          type === "meta"
+            ? "Una meta desactivada no se incluirá en los cálculos de ahorro. Eliminarla por completo borrará también todos sus abonos del historial."
+            : "Una deuda desactivada no podrá recibir nuevos abonos. Eliminarla por completo borrará también todos sus pagos del historial.";
+        document.getElementById("delete-confirm-text").textContent = text;
+        deleteConfirmModal.classList.remove("hidden");
+      }
+
+      function handleDeactivate() {
+        const { type, id } = deleteConfirmModal.dataset;
+        const idNum = parseInt(id);
+
+        if (type === "deuda") {
+          const debt = debts.find((d) => d.ID === idNum);
+          if (debt) debt.isActive = false;
+        } else if (type === "meta") {
+          const goal = goals.find((g) => g.ID === idNum);
+          if (goal) goal.isActive = false;
+        }
+        deleteConfirmModal.classList.add("hidden");
+        renderAll();
+      }
+
+      function handleFullDelete() {
+        const { type, id } = deleteConfirmModal.dataset;
+        const idNum = parseInt(id);
+        if (type === "deuda") {
+          debts = debts.filter((d) => d.ID !== idNum);
+          transactions = transactions.filter((t) => t.linkedDebtId !== idNum);
+        } else if (type === "meta") {
+          goals = goals.filter((g) => g.ID !== idNum);
+          transactions = transactions.filter((t) => t.linkedGoalId !== idNum);
+        }
+        deleteConfirmModal.classList.add("hidden");
+        renderAll();
+      }
+
+      function populateMonthFilter() {
+        const monthFilter = document.getElementById("month-filter");
+        const months = [
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre",
+        ];
+        monthFilter.innerHTML = months
+          .map((month, index) => `<option value="${index}">${month}</option>`)
+          .join("");
+        monthFilter.value = new Date().getMonth();
+      }
+
+      function populateYearFilters() {
+        const yearFilter = document.getElementById("year-filter");
+        const yearOnlyFilter = document.getElementById("year-only-filter");
+        const currentYear = new Date().getFullYear();
+        const years = new Set(
+          transactions.map((t) => new Date(t.Date).getFullYear())
+        );
+        years.add(currentYear);
+
+        const sortedYears = Array.from(years).sort((a, b) => b - a);
+        const optionsHtml = sortedYears
+          .map((year) => `<option value="${year}">${year}</option>`)
+          .join("");
+        yearFilter.innerHTML = optionsHtml;
+        yearOnlyFilter.innerHTML = optionsHtml;
+        yearFilter.value = currentYear;
+        yearOnlyFilter.value = currentYear;
+      }
+
+      function handleFilterTypeChange(e) {
+        if (e.target.tagName === "BUTTON") {
+          currentFilterType = e.target.dataset.filter;
+          updateFilterControlsUI();
+          renderAll();
+        }
+      }
+
+      function updateFilterControlsUI() {
+        document
+          .querySelectorAll(".filter-type-btn")
+          .forEach((btn) =>
+            btn.classList.toggle(
+              "tab-active",
+              btn.dataset.filter === currentFilterType
+            )
+          );
+        document
+          .getElementById("date-filter-container")
+          .classList.toggle("hidden", currentFilterType !== "day");
+        document
+          .getElementById("month-year-filter-container")
+          .classList.toggle("hidden", currentFilterType !== "month");
+        document
+          .getElementById("year-only-filter-container")
+          .classList.toggle("hidden", currentFilterType !== "year");
+
+        if (
+          currentFilterType === "day" &&
+          !document.getElementById("date-filter").value
+        ) {
+          document.getElementById("date-filter").value = new Date()
+            .toISOString()
+            .split("T")[0];
+        }
+      }
+    </script>
+  </body>
+</html>
