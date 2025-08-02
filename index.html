@@ -782,7 +782,7 @@
 
     <div
       id="suggestion-modal"
-      class="fixed top-4 left-4 z-50 card w-full max-w-md hidden !p-4"
+      class="fixed top-4 left-4 z-50 card w-full max-w-lg hidden !p-4"
     >
       <div class="flex justify-between items-center mb-3">
         <h2
@@ -798,10 +798,75 @@
           &times;
         </button>
       </div>
+      
+      <!-- Filtros para el modal de sugerencias -->
+      <div class="w-full sm:w-auto mb-4">
+        <div
+          id="suggestion-filter-type-selector"
+          class="flex items-center bg-slate-900 rounded-lg p-1 mb-2"
+        >
+          <button
+            data-filter="day"
+            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
+          >
+            Día
+          </button>
+          <button
+            data-filter="month"
+            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full tab-active"
+          >
+            Mes
+          </button>
+          <button
+            data-filter="year"
+            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
+          >
+            Año
+          </button>
+           <button
+            data-filter="all"
+            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
+          >
+            Todo
+          </button>
+        </div>
+        <div id="suggestion-filter-inputs">
+          <div id="suggestion-date-filter-container" class="hidden">
+            <input
+              type="date"
+              id="suggestion-date-filter"
+              class="p-2 select-field w-full"
+            />
+          </div>
+          <div
+            id="suggestion-month-year-filter-container"
+            class="flex items-center gap-2"
+          >
+            <select
+              id="suggestion-month-filter"
+              class="p-2 select-field w-full"
+            ></select>
+            <select
+              id="suggestion-year-filter"
+              class="p-2 select-field w-full"
+            ></select>
+          </div>
+          <div id="suggestion-year-only-filter-container" class="hidden">
+            <select
+              id="suggestion-year-only-filter"
+              class="p-2 select-field w-full"
+            ></select>
+          </div>
+        </div>
+      </div>
+
       <div
         id="suggestion-modal-content"
-        class="space-y-2 max-h-96 overflow-y-auto pr-2"
+        class="space-y-2 max-h-80 overflow-y-auto pr-2"
       ></div>
+      
+      <div id="suggestion-summary-content"></div>
+
     </div>
 
     <div
@@ -1103,6 +1168,7 @@
       let budgetSuggestions = [];
       let expenseChart = null;
       let currentFilterType = "month";
+      let currentSuggestionFilterType = "month";
 
       // --- DOM Elements ---
       const excelUpload = document.getElementById("excel-upload");
@@ -1131,9 +1197,16 @@
       });
 
       function initializeUI() {
-        populateMonthFilter();
-        populateYearFilters();
+        // Main filters
+        populateMonthFilter("month-filter");
+        populateYearFilters("year-filter", "year-only-filter");
         updateFilterControlsUI();
+        
+        // Suggestion modal filters
+        populateMonthFilter("suggestion-month-filter");
+        populateYearFilters("suggestion-year-filter", "suggestion-year-only-filter");
+        updateSuggestionFilterControlsUI();
+
         setDefaultDates();
         toggleDynamicCategorySections();
         renderAll();
@@ -1146,6 +1219,7 @@
         document.getElementById("debt-date").value = today;
         document.getElementById("add-savings-goal-date").value = today;
         document.getElementById("add-payment-debt-date").value = today;
+        document.getElementById("suggestion-date-filter").value = today;
       }
 
       // --- Event Listeners ---
@@ -1190,7 +1264,7 @@
           .getElementById("goal-form")
           .addEventListener("submit", handleAddGoal);
 
-        // --- Filtros ---
+        // --- Filtros Principales---
         document
           .getElementById("filter-type-selector")
           .addEventListener("click", handleFilterTypeChange);
@@ -1207,6 +1281,15 @@
           .getElementById("year-only-filter")
           .addEventListener("change", renderAll);
         
+        // --- Filtros de Sugerencias ---
+        document
+          .getElementById("suggestion-filter-type-selector")
+          .addEventListener("click", handleSuggestionFilterTypeChange);
+        const suggestionFilters = ["suggestion-date-filter", "suggestion-month-filter", "suggestion-year-filter", "suggestion-year-only-filter"];
+        suggestionFilters.forEach(id => {
+            document.getElementById(id).addEventListener("change", showAllSuggestions);
+        });
+
         // --- Interacciones de Deudas ---
         document
           .getElementById("debt-list")
@@ -2093,19 +2176,49 @@
         suggestionModal.classList.remove("hidden");
       }
 
+      function getFilteredSuggestions() {
+        if (currentSuggestionFilterType === "all") {
+            return budgetSuggestions;
+        }
+
+        let startDate, endDate;
+        switch (currentSuggestionFilterType) {
+            case "day":
+                const dateValue = document.getElementById("suggestion-date-filter").value || new Date().toISOString().split("T")[0];
+                startDate = new Date(dateValue + "T00:00:00");
+                endDate = new Date(dateValue + "T23:59:59");
+                break;
+            case "month":
+                const month = parseInt(document.getElementById("suggestion-month-filter").value);
+                const yearMonth = parseInt(document.getElementById("suggestion-year-filter").value);
+                startDate = new Date(yearMonth, month, 1);
+                endDate = new Date(yearMonth, month + 1, 0, 23, 59, 59, 999);
+                break;
+            case "year":
+                const year = parseInt(document.getElementById("suggestion-year-only-filter").value);
+                startDate = new Date(year, 0, 1);
+                endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+                break;
+        }
+        return budgetSuggestions.filter(s => new Date(s.Date) >= startDate && new Date(s.Date) <= endDate);
+      }
+
       function showAllSuggestions() {
         const formatter = new Intl.NumberFormat("es-CL", {
           style: "currency",
           currency: "CLP",
         });
-        const content = document.getElementById("suggestion-modal-content");
-        document.getElementById("suggestion-modal-title").textContent =
-          "Historial de Sugerencias";
+        const listContentEl = document.getElementById("suggestion-modal-content");
+        const summaryContentEl = document.getElementById("suggestion-summary-content");
+        document.getElementById("suggestion-modal-title").textContent = "Historial de Sugerencias";
 
-        if (budgetSuggestions.length === 0) {
-            content.innerHTML = '<p class="text-slate-400 text-center">No hay sugerencias registradas.</p>';
+        const filteredSuggestions = getFilteredSuggestions();
+
+        if (filteredSuggestions.length === 0) {
+            listContentEl.innerHTML = '<p class="text-slate-400 text-center py-8">No hay sugerencias para el período seleccionado.</p>';
+            summaryContentEl.innerHTML = "";
         } else {
-            const listHtml = budgetSuggestions
+            listContentEl.innerHTML = filteredSuggestions
                 .slice()
                 .sort((a, b) => new Date(b.Date) - new Date(a.Date))
                 .map(
@@ -2137,14 +2250,14 @@
                 )
                 .join("");
 
-            const totalIncomeAmount = budgetSuggestions.reduce((sum, s) => sum + s.Amount, 0);
-            const totalSuggestedSavings = budgetSuggestions.reduce((sum, s) => sum + s.SuggestedSavings, 0);
-            const totalSuggestedNeeds = budgetSuggestions.reduce((sum, s) => sum + s.SuggestedNeeds, 0);
-            const totalSuggestedWants = budgetSuggestions.reduce((sum, s) => sum + s.SuggestedWants, 0);
+            const totalIncomeAmount = filteredSuggestions.reduce((sum, s) => sum + s.Amount, 0);
+            const totalSuggestedSavings = filteredSuggestions.reduce((sum, s) => sum + s.SuggestedSavings, 0);
+            const totalSuggestedNeeds = filteredSuggestions.reduce((sum, s) => sum + s.SuggestedNeeds, 0);
+            const totalSuggestedWants = filteredSuggestions.reduce((sum, s) => sum + s.SuggestedWants, 0);
 
-            const summaryHtml = `
+            summaryContentEl.innerHTML = `
                 <div class="mt-4 pt-4 border-t-2 border-slate-600">
-                    <h3 class="font-bold text-lg text-slate-200 mb-2">Totales Generales Sugeridos</h3>
+                    <h3 class="font-bold text-lg text-slate-200 mb-2">Totales Sugeridos del Período</h3>
                     <div class="p-3 bg-slate-800 rounded-lg space-y-2 text-sm">
                         <p class="flex justify-between items-center">
                             <span class="font-medium text-slate-300">Ingreso Total Considerado:</span>
@@ -2166,8 +2279,6 @@
                     </div>
                 </div>
             `;
-
-            content.innerHTML = listHtml + summaryHtml;
         }
         suggestionModal.classList.remove("hidden");
       }
@@ -2372,21 +2483,11 @@
         renderAll();
       }
 
-      function populateMonthFilter() {
-        const monthFilter = document.getElementById("month-filter");
+      function populateMonthFilter(elementId) {
+        const monthFilter = document.getElementById(elementId);
         const months = [
-          "Enero",
-          "Febrero",
-          "Marzo",
-          "Abril",
-          "Mayo",
-          "Junio",
-          "Julio",
-          "Agosto",
-          "Septiembre",
-          "Octubre",
-          "Noviembre",
-          "Diciembre",
+          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
         ];
         monthFilter.innerHTML = months
           .map((month, index) => `<option value="${index}">${month}</option>`)
@@ -2394,12 +2495,12 @@
         monthFilter.value = new Date().getMonth();
       }
 
-      function populateYearFilters() {
-        const yearFilter = document.getElementById("year-filter");
-        const yearOnlyFilter = document.getElementById("year-only-filter");
+      function populateYearFilters(yearElementId, yearOnlyElementId) {
+        const yearFilter = document.getElementById(yearElementId);
+        const yearOnlyFilter = document.getElementById(yearOnlyElementId);
         const currentYear = new Date().getFullYear();
         const years = new Set(
-          transactions.map((t) => new Date(t.Date).getFullYear())
+          [...transactions, ...budgetSuggestions].map((item) => new Date(item.Date).getFullYear())
         );
         years.add(currentYear);
 
@@ -2407,17 +2508,27 @@
         const optionsHtml = sortedYears
           .map((year) => `<option value="${year}">${year}</option>`)
           .join("");
-        yearFilter.innerHTML = optionsHtml;
-        yearOnlyFilter.innerHTML = optionsHtml;
-        yearFilter.value = currentYear;
-        yearOnlyFilter.value = currentYear;
+        
+        if(yearFilter) yearFilter.innerHTML = optionsHtml;
+        if(yearOnlyFilter) yearOnlyFilter.innerHTML = optionsHtml;
+        
+        if(yearFilter) yearFilter.value = currentYear;
+        if(yearOnlyFilter) yearOnlyFilter.value = currentYear;
       }
-
+      
       function handleFilterTypeChange(e) {
         if (e.target.tagName === "BUTTON") {
           currentFilterType = e.target.dataset.filter;
           updateFilterControlsUI();
           renderAll();
+        }
+      }
+      
+      function handleSuggestionFilterTypeChange(e) {
+        if (e.target.tagName === "BUTTON") {
+          currentSuggestionFilterType = e.target.dataset.filter;
+          updateSuggestionFilterControlsUI();
+          showAllSuggestions();
         }
       }
 
@@ -2445,6 +2556,40 @@
           !document.getElementById("date-filter").value
         ) {
           document.getElementById("date-filter").value = new Date()
+            .toISOString()
+            .split("T")[0];
+        }
+      }
+
+      function updateSuggestionFilterControlsUI() {
+        document
+          .querySelectorAll(".suggestion-filter-type-btn")
+          .forEach((btn) =>
+            btn.classList.toggle(
+              "tab-active",
+              btn.dataset.filter === currentSuggestionFilterType
+            )
+          );
+        
+        const showDate = currentSuggestionFilterType === "day";
+        const showMonthYear = currentSuggestionFilterType === "month";
+        const showYearOnly = currentSuggestionFilterType === "year";
+
+        document
+          .getElementById("suggestion-date-filter-container")
+          .classList.toggle("hidden", !showDate);
+        document
+          .getElementById("suggestion-month-year-filter-container")
+          .classList.toggle("hidden", !showMonthYear);
+        document
+          .getElementById("suggestion-year-only-filter-container")
+          .classList.toggle("hidden", !showYearOnly);
+
+        if (
+          currentSuggestionFilterType === "day" &&
+          !document.getElementById("suggestion-date-filter").value
+        ) {
+          document.getElementById("suggestion-date-filter").value = new Date()
             .toISOString()
             .split("T")[0];
         }
