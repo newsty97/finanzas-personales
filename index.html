@@ -79,7 +79,7 @@
         border-color: #4f46e5; /* indigo-600 */
         box-shadow: 0 0 0 2px #3730a3; /* indigo-800 */
       }
-      input[type="date"]::-webkit-calendar-picker-indicator,
+      input[type="datetime-local"]::-webkit-calendar-picker-indicator,
       input[type="file"]::-webkit-file-upload-button {
         filter: invert(1);
         cursor: pointer;
@@ -107,150 +107,6 @@
     </style>
   </head>
   <body class="p-4 sm:p-6 lg:p-8">
-    <!-- Modal de Instrucciones -->
-    <div
-      id="instructions-modal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden"
-    >
-      <div class="card w-full max-w-2xl !p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-slate-200">
-            🚀 ¡Bienvenido/a al Gestor Financiero!
-          </h2>
-          <button
-            id="close-instructions-btn"
-            class="text-2xl font-bold text-slate-400 hover:text-white"
-          >
-            &times;
-          </button>
-        </div>
-        <div
-          class="space-y-4 text-slate-300 max-h-[70vh] overflow-y-auto pr-3"
-        >
-          <p>
-            Esta herramienta te ayuda a tomar el control de tus finanzas usando
-            un archivo Excel. ¡Tus datos siempre son tuyos!
-          </p>
-
-          <div>
-            <h3 class="font-bold text-lg text-indigo-400 mb-1">
-              Paso 1: Carga tus Datos
-            </h3>
-            <ul class="list-disc list-inside space-y-1 text-sm">
-              <li>
-                <strong>Opción A (Primera vez):</strong> Haz clic en
-                <code class="bg-slate-700 px-1 rounded"
-                  >Descarga la plantilla</code
-                >
-                para empezar con un archivo Excel limpio.
-              </li>
-              <li>
-                <strong>Opción B (Continuar):</strong> Carga tu archivo Excel ya
-                existente usando el botón
-                <code class="bg-slate-700 px-1 rounded">Carga tu archivo</code>.
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="font-bold text-lg text-indigo-400 mb-1">
-              Paso 2: Registra tus Movimientos Diarios 💸
-            </h3>
-            <ul class="list-disc list-inside space-y-1 text-sm">
-              <li>
-                Usa el formulario <strong>Movimiento Diario</strong> para añadir
-                ingresos y gastos.
-              </li>
-              <li>
-                Usa las tarjetas de <strong>Gestionar Deudas</strong> y
-                <strong>Gestión de Metas</strong> para crear tus objetivos
-                financieros.
-              </li>
-              <li>
-                Al registrar un gasto, puedes categorizarlo como
-                <code class="bg-slate-700 px-1 rounded">Abono a Deuda</code> o
-                <code class="bg-slate-700 px-1 rounded">Ahorro a Metas</code>. El
-                sistema lo descontará automáticamente del saldo correspondiente.
-              </li>
-              <li>
-                La tarjeta de <strong>Ahorro Independiente</strong> funciona
-                como una alcancía separada para tus ahorros no ligados a metas.
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="font-bold text-lg text-indigo-400 mb-1">
-              Paso 3: Analiza tus Finanzas 📊
-            </h3>
-            <ul class="list-disc list-inside space-y-1 text-sm">
-              <li>
-                Los resúmenes de <strong>Ingresos, Gastos y Balance</strong> se
-                actualizan según el filtro de fecha (Día, Mes, Año).
-              </li>
-              <li>
-                El <strong>gráfico de gastos</strong> te muestra en qué
-                categorías se va tu dinero.
-              </li>
-              <li>
-                El <strong>Historial Diario</strong> muestra todas las
-                transacciones del período seleccionado.
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="font-bold text-lg text-indigo-400 mb-1">
-              Paso 4: Funciones Clave ✨
-            </h3>
-            <ul class="list-disc list-inside space-y-1 text-sm">
-              <li>
-                <strong>Sugerencias 50/30/20:</strong> Al añadir un ingreso,
-                aparecerá una sugerencia de cómo distribuirlo (50% para Ahorro,
-                30% para Gastos Fijos, 20% para Gastos Personales).
-              </li>
-              <li>
-                <strong>Abonar a Deudas/Metas:</strong> Usa los botones
-                <code class="bg-green-600 text-white text-xs px-1 rounded"
-                  >Abonar</code
-                >
-                en las listas de deudas y metas para agregar pagos rápidamente.
-              </li>
-              <li>
-                <strong>Desactivar vs. Eliminar:</strong> Al borrar una deuda o
-                meta, puedes "Solo Desactivar" (la oculta de los cálculos pero
-                mantiene el historial) o "Eliminar por Completo" (borra la meta/deuda Y
-                todas sus transacciones asociadas para siempre).
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="font-bold text-lg text-red-400 mb-1">
-              Paso 5: ¡No Olvides Guardar! 💾
-            </h3>
-            <p class="text-sm">
-              Todos los cambios que haces se guardan temporalmente en el
-              navegador. Cuando termines, haz clic en
-              <strong
-                >Guardar y Descargar Excel</strong
-              >
-              para guardar todo en tu archivo .xlsx.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 text-center">
-          <button
-            id="understand-instructions-btn"
-            class="w-1/2 btn btn-primary font-bold py-2 px-4 rounded-lg"
-          >
-            ¡Entendido!
-          </button>
-        </div>
-      </div>
-    </div>
-
     <div class="max-w-screen-2xl mx-auto space-y-6">
       <header class="text-center">
         <h1
@@ -265,16 +121,9 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
         <div class="card">
-          <div class="flex justify-between items-center mb-3">
-            <h2 class="text-xl font-bold text-slate-200">
-              Gestión de Datos
-            </h2>
-            <button id="open-instructions-btn" class="text-slate-400 hover:text-indigo-400" title="Ver Instrucciones">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-          </div>
+          <h2 class="text-xl font-bold mb-3 text-slate-200">
+            Gestión de Datos
+          </h2>
           <div class="card-content space-y-4 flex flex-col justify-between">
             <div>
               <label
@@ -370,10 +219,10 @@
                   <label
                     for="transaction-date"
                     class="block text-xs font-medium text-slate-400 mb-1"
-                    >Fecha</label
+                    >Fecha y Hora</label
                   >
                   <input
-                    type="date"
+                    type="datetime-local"
                     id="transaction-date"
                     class="w-full input-field"
                     required
@@ -463,10 +312,10 @@
                   <label
                     for="debt-date"
                     class="block text-xs font-medium text-slate-400 mb-1"
-                    >Fecha</label
+                    >Fecha y Hora</label
                   >
                   <input
-                    type="date"
+                    type="datetime-local"
                     id="debt-date"
                     class="w-full input-field"
                     required
@@ -606,10 +455,10 @@
                   <label
                     for="savings-date"
                     class="block text-xs font-medium text-slate-400 mb-1"
-                    >Fecha</label
+                    >Fecha y Hora</label
                   >
                   <input
-                    type="date"
+                    type="datetime-local"
                     id="savings-date"
                     class="w-full input-field"
                     required
@@ -782,7 +631,7 @@
 
     <div
       id="suggestion-modal"
-      class="fixed top-4 left-4 z-50 card w-full max-w-lg hidden !p-4"
+      class="fixed top-4 left-4 z-50 card w-full max-w-md hidden !p-4"
     >
       <div class="flex justify-between items-center mb-3">
         <h2
@@ -798,75 +647,10 @@
           &times;
         </button>
       </div>
-      
-      <!-- Filtros para el modal de sugerencias -->
-      <div class="w-full sm:w-auto mb-4">
-        <div
-          id="suggestion-filter-type-selector"
-          class="flex items-center bg-slate-900 rounded-lg p-1 mb-2"
-        >
-          <button
-            data-filter="day"
-            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
-          >
-            Día
-          </button>
-          <button
-            data-filter="month"
-            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full tab-active"
-          >
-            Mes
-          </button>
-          <button
-            data-filter="year"
-            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
-          >
-            Año
-          </button>
-           <button
-            data-filter="all"
-            class="suggestion-filter-type-btn px-3 py-1 text-sm font-medium rounded-md w-full"
-          >
-            Todo
-          </button>
-        </div>
-        <div id="suggestion-filter-inputs">
-          <div id="suggestion-date-filter-container" class="hidden">
-            <input
-              type="date"
-              id="suggestion-date-filter"
-              class="p-2 select-field w-full"
-            />
-          </div>
-          <div
-            id="suggestion-month-year-filter-container"
-            class="flex items-center gap-2"
-          >
-            <select
-              id="suggestion-month-filter"
-              class="p-2 select-field w-full"
-            ></select>
-            <select
-              id="suggestion-year-filter"
-              class="p-2 select-field w-full"
-            ></select>
-          </div>
-          <div id="suggestion-year-only-filter-container" class="hidden">
-            <select
-              id="suggestion-year-only-filter"
-              class="p-2 select-field w-full"
-            ></select>
-          </div>
-        </div>
-      </div>
-
       <div
         id="suggestion-modal-content"
-        class="space-y-2 max-h-80 overflow-y-auto pr-2"
+        class="space-y-2 max-h-96 overflow-y-auto pr-2"
       ></div>
-      
-      <div id="suggestion-summary-content"></div>
-
     </div>
 
     <div
@@ -1009,7 +793,7 @@
               >Fecha del Ahorro</label
             >
             <input
-              type="date"
+              type="datetime-local"
               id="add-savings-goal-date"
               class="w-full p-3 input-field"
               required
@@ -1068,7 +852,7 @@
               >Fecha del Abono</label
             >
             <input
-              type="date"
+              type="datetime-local"
               id="add-payment-debt-date"
               class="w-full p-3 input-field"
               required
@@ -1168,7 +952,6 @@
       let budgetSuggestions = [];
       let expenseChart = null;
       let currentFilterType = "month";
-      let currentSuggestionFilterType = "month";
 
       // --- DOM Elements ---
       const excelUpload = document.getElementById("excel-upload");
@@ -1197,29 +980,26 @@
       });
 
       function initializeUI() {
-        // Main filters
-        populateMonthFilter("month-filter");
-        populateYearFilters("year-filter", "year-only-filter");
+        populateMonthFilter();
+        populateYearFilters();
         updateFilterControlsUI();
-        
-        // Suggestion modal filters
-        populateMonthFilter("suggestion-month-filter");
-        populateYearFilters("suggestion-year-filter", "suggestion-year-only-filter");
-        updateSuggestionFilterControlsUI();
-
         setDefaultDates();
         toggleDynamicCategorySections();
         renderAll();
       }
 
       function setDefaultDates() {
-        const today = new Date().toISOString().split("T")[0];
+        const now = new Date();
+        // Este truco ajusta la fecha a la zona horaria local para que el formato YYYY-MM-DDTHH:mm sea correcto
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        const today = now.toISOString().slice(0, 16);
+
         document.getElementById("savings-date").value = today;
         document.getElementById("transaction-date").value = today;
         document.getElementById("debt-date").value = today;
         document.getElementById("add-savings-goal-date").value = today;
         document.getElementById("add-payment-debt-date").value = today;
-        document.getElementById("suggestion-date-filter").value = today;
+        document.getElementById("date-filter").value = today.slice(0, 10);
       }
 
       // --- Event Listeners ---
@@ -1228,22 +1008,6 @@
         downloadBtn.addEventListener("click", saveAndDownloadExcel);
         templateLink.addEventListener("click", downloadTemplate);
 
-        // --- Modal de Instrucciones ---
-        const instructionsModal = document.getElementById("instructions-modal");
-        const closeInstructionsBtn = document.getElementById("close-instructions-btn");
-        const understandBtn = document.getElementById("understand-instructions-btn");
-        const openInstructionsBtn = document.getElementById("open-instructions-btn");
-
-        const closeInstructionModal = () => instructionsModal.classList.add("hidden");
-        
-        openInstructionsBtn.addEventListener("click", () => {
-          instructionsModal.classList.remove("hidden");
-        });
-
-        closeInstructionsBtn.addEventListener("click", closeInstructionModal);
-        understandBtn.addEventListener("click", closeInstructionModal);
-
-        // --- Formularios Principales ---
         document
           .getElementById("savings-form")
           .addEventListener("submit", handleAddSavingsTransaction);
@@ -1264,7 +1028,6 @@
           .getElementById("goal-form")
           .addEventListener("submit", handleAddGoal);
 
-        // --- Filtros Principales---
         document
           .getElementById("filter-type-selector")
           .addEventListener("click", handleFilterTypeChange);
@@ -1280,17 +1043,7 @@
         document
           .getElementById("year-only-filter")
           .addEventListener("change", renderAll);
-        
-        // --- Filtros de Sugerencias ---
-        document
-          .getElementById("suggestion-filter-type-selector")
-          .addEventListener("click", handleSuggestionFilterTypeChange);
-        const suggestionFilters = ["suggestion-date-filter", "suggestion-month-filter", "suggestion-year-filter", "suggestion-year-only-filter"];
-        suggestionFilters.forEach(id => {
-            document.getElementById(id).addEventListener("change", showAllSuggestions);
-        });
 
-        // --- Interacciones de Deudas ---
         document
           .getElementById("debt-list")
           .addEventListener("click", handleDebtListClicks);
@@ -1310,8 +1063,7 @@
           .addEventListener("click", () =>
             addPaymentToDebtModal.classList.add("hidden")
           );
-        
-        // --- Interacciones de Metas ---
+
         document
           .getElementById("goal-list")
           .addEventListener("click", handleGoalListClicks);
@@ -1327,8 +1079,7 @@
         document
           .getElementById("cancel-add-savings-goal")
           .addEventListener("click", closeAddSavingsToGoalModal);
-        
-        // --- Otros Modales ---
+
         document
           .getElementById("view-suggestions-btn")
           .addEventListener("click", showAllSuggestions);
@@ -1346,8 +1097,7 @@
           .addEventListener("click", () =>
             savingsHistoryModal.classList.add("hidden")
           );
-        
-        // --- Modal de Confirmación de Borrado ---
+
         document
           .getElementById("cancel-delete-btn")
           .addEventListener("click", () =>
@@ -1361,7 +1111,32 @@
           .addEventListener("click", handleFullDelete);
       }
 
+      function parseDate(dateValue) {
+        if (!dateValue) return new Date();
+        if (dateValue instanceof Date) return dateValue;
+
+        if (typeof dateValue === "string") {
+          const parts = dateValue.match(
+            /(\d{2})-(\d{2})-(\d{4})\s*(\d{2}):(\d{2}):(\d{2})/
+          );
+          if (parts) {
+            return new Date(
+              parts[3],
+              parts[2] - 1,
+              parts[1],
+              parts[4],
+              parts[5],
+              parts[6]
+            );
+          }
+        }
+
+        const parsedDate = new Date(dateValue);
+        return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+      }
+
       // --- Excel & Data Handling ---
+      // --- CAMBIO PRINCIPAL AQUÍ ---
       function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1372,45 +1147,53 @@
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: "array", cellDates: true });
 
-          transactions = workbook.Sheets["Transactions"]
-            ? XLSX.utils.sheet_to_json(workbook.Sheets["Transactions"])
-            : [];
-          debts = workbook.Sheets["Debts"]
-            ? XLSX.utils.sheet_to_json(workbook.Sheets["Debts"])
-            : [];
-          savings = workbook.Sheets["Savings"]
-            ? XLSX.utils.sheet_to_json(workbook.Sheets["Savings"])
-            : [];
-          goals = workbook.Sheets["Goals"]
-            ? XLSX.utils.sheet_to_json(workbook.Sheets["Goals"])
-            : [];
-          budgetSuggestions = workbook.Sheets["Suggestions"]
-            ? XLSX.utils.sheet_to_json(workbook.Sheets["Suggestions"])
-            : [];
+          const processSheet = (sheetName) => {
+            const sheetData = workbook.Sheets[sheetName]
+              ? XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
+              : [];
 
-          [
-            ...transactions,
-            ...debts,
-            ...savings,
-            ...goals,
-            ...budgetSuggestions,
-          ].forEach((item) => {
-            for (const key in item) {
-              if (
-                key.toLowerCase().includes("date") &&
-                item[key] &&
-                !(item[key] instanceof Date)
-              ) {
-                item[key] = new Date(item[key]);
+            sheetData.forEach((item) => {
+              for (const key in item) {
+                // Procesa las columnas que contienen 'Date'
+                if (key.toLowerCase().includes("date") && item[key]) {
+                  let d = item[key];
+
+                  // Si 'cellDates: true' creó un objeto Date, lo corregimos.
+                  if (d instanceof Date) {
+                    // Creamos una nueva fecha local usando los componentes UTC de la fecha leída.
+                    // Esto anula la conversión de zona horaria que hace la librería.
+                    const correctedDate = new Date(
+                      d.getUTCFullYear(),
+                      d.getUTCMonth(),
+                      d.getUTCDate(),
+                      d.getUTCHours(),
+                      d.getUTCMinutes(),
+                      d.getUTCSeconds()
+                    );
+                    item[key] = correctedDate;
+                  } else {
+                    // Si es un string, usamos el parser robusto
+                    item[key] = parseDate(d);
+                  }
+                }
+
+                // Procesa montos y balances
+                if (
+                  key.toLowerCase().includes("amount") ||
+                  key.toLowerCase().includes("balance")
+                ) {
+                  if (item[key]) item[key] = parseFloat(item[key]);
+                }
               }
-              if (
-                key.toLowerCase().includes("amount") ||
-                key.toLowerCase().includes("balance")
-              ) {
-                if (item[key]) item[key] = parseFloat(item[key]);
-              }
-            }
-          });
+            });
+            return sheetData;
+          };
+
+          transactions = processSheet("Transactions");
+          debts = processSheet("Debts");
+          savings = processSheet("Savings");
+          goals = processSheet("Goals");
+          budgetSuggestions = processSheet("Suggestions");
 
           debts.forEach((d) => (d.isActive = d.isActive ?? true));
           goals.forEach((g) => (g.isActive = g.isActive ?? true));
@@ -1421,30 +1204,48 @@
       }
 
       function saveAndDownloadExcel() {
+        const formatForExcel = (data) => {
+          return data.map((item) => {
+            const newItem = { ...item };
+            for (const key in newItem) {
+              if (newItem[key] instanceof Date) {
+                const d = newItem[key];
+                const pad = (num) => num.toString().padStart(2, "0");
+                newItem[key] = `${pad(d.getDate())}-${pad(
+                  d.getMonth() + 1
+                )}-${d.getFullYear()} ${pad(d.getHours())}:${pad(
+                  d.getMinutes()
+                )}:${pad(d.getSeconds())}`;
+              }
+            }
+            return newItem;
+          });
+        };
+
         const newWorkbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(
           newWorkbook,
-          XLSX.utils.json_to_sheet(transactions),
+          XLSX.utils.json_to_sheet(formatForExcel(transactions)),
           "Transactions"
         );
         XLSX.utils.book_append_sheet(
           newWorkbook,
-          XLSX.utils.json_to_sheet(debts),
+          XLSX.utils.json_to_sheet(formatForExcel(debts)),
           "Debts"
         );
         XLSX.utils.book_append_sheet(
           newWorkbook,
-          XLSX.utils.json_to_sheet(savings),
+          XLSX.utils.json_to_sheet(formatForExcel(savings)),
           "Savings"
         );
         XLSX.utils.book_append_sheet(
           newWorkbook,
-          XLSX.utils.json_to_sheet(goals),
+          XLSX.utils.json_to_sheet(formatForExcel(goals)),
           "Goals"
         );
         XLSX.utils.book_append_sheet(
           newWorkbook,
-          XLSX.utils.json_to_sheet(budgetSuggestions),
+          XLSX.utils.json_to_sheet(formatForExcel(budgetSuggestions)),
           "Suggestions"
         );
         XLSX.writeFile(newWorkbook, "GestorFinanciero_Actualizado.xlsx");
@@ -1520,9 +1321,7 @@
         const dateValue = document.getElementById("transaction-date").value;
         if (!description || isNaN(amount) || amount <= 0) return;
 
-        const transactionDate = dateValue
-          ? new Date(dateValue + "T00:00:00")
-          : new Date();
+        const transactionDate = new Date(dateValue);
         let linkedIdProperty = {};
 
         if (type === "income") {
@@ -1599,7 +1398,7 @@
           Description: description,
           TotalAmount: amount,
           CurrentBalance: amount,
-          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          Date: new Date(dateValue),
           isActive: true,
         });
         document.getElementById("debt-form").reset();
@@ -1648,7 +1447,7 @@
           Description: `Abono a: ${debt.Description}`,
           Amount: amount,
           Category: "Abono a Deuda",
-          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          Date: new Date(dateValue),
           linkedDebtId: debt.ID,
         });
 
@@ -1716,7 +1515,7 @@
           Description: `Ahorro para: ${goal.Description}`,
           Amount: amount,
           Category: "Ahorro a Metas",
-          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          Date: new Date(dateValue),
           linkedGoalId: goal.ID,
         });
 
@@ -1741,7 +1540,7 @@
           Type: type,
           Description: description,
           Amount: amount,
-          Date: dateValue ? new Date(dateValue + "T00:00:00") : new Date(),
+          Date: new Date(dateValue),
         });
         document.getElementById("savings-form").reset();
         setDefaultDates();
@@ -1892,23 +1691,32 @@
             item.className = `flex justify-between items-center p-2 bg-slate-700/50 rounded-lg text-sm ${
               isInactiveLink ? "item-inactive" : ""
             }`;
+
+            const dateString = new Date(t.Date).toLocaleString("es-CL", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
             item.innerHTML = `
-                          <div>
-                              <p class="font-semibold text-slate-200">${
-                                t.Description
-                              }</p>
-                              <p class="text-xs text-slate-400">${
-                                t.Category
-                              } - ${new Date(t.Date).toLocaleDateString("es-CL")} ${
+                      <div>
+                          <p class="font-semibold text-slate-200">${
+                            t.Description
+                          }</p>
+                          <p class="text-xs text-slate-400">${
+                            t.Category
+                          } - ${dateString} ${
               isInactiveLink ? "(Desactivado)" : ""
             }</p>
-                          </div>
-                          <span class="font-bold ${
-                            isExpense ? "text-red-400" : "text-green-400"
-                          }">${isExpense ? "-" : "+"}${formatter.format(
+                      </div>
+                      <span class="font-bold ${
+                        isExpense ? "text-red-400" : "text-green-400"
+                      }">${isExpense ? "-" : "+"}${formatter.format(
               t.Amount
             )}</span>
-                      `;
+                  `;
             listEl.appendChild(item);
           });
       }
@@ -1965,24 +1773,24 @@
                 !isActive ? "item-inactive" : ""
               }`;
               item.innerHTML = `
-                                  <div class="flex justify-between items-center">
-                                      <p class="font-semibold text-slate-200 flex-1 mr-2 truncate description-text">${
-                                        debt.Description
-                                      }</p>
-                                      <div class="flex items-center gap-2">${buttonsHtml}</div>
-                                  </div>
-                                  <div>
-                                      <div class="flex justify-between text-xs text-slate-400 mb-1">
-                                          <span>${formatter.format(
-                                            debt.CurrentBalance
-                                          )}</span>
-                                          <span class="font-medium">${formatter.format(
-                                            debt.TotalAmount
-                                          )}</span>
-                                      </div>
-                                      <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full" style="width: ${progress}%"></div></div>
-                                  </div>
-                              `;
+                                <div class="flex justify-between items-center">
+                                    <p class="font-semibold text-slate-200 flex-1 mr-2 truncate description-text">${
+                                      debt.Description
+                                    }</p>
+                                    <div class="flex items-center gap-2">${buttonsHtml}</div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                        <span>${formatter.format(
+                                          debt.CurrentBalance
+                                        )}</span>
+                                        <span class="font-medium">${formatter.format(
+                                          debt.TotalAmount
+                                        )}</span>
+                                    </div>
+                                    <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full" style="width: ${progress}%"></div></div>
+                                </div>
+                            `;
               debtList.appendChild(item);
             });
         }
@@ -2036,13 +1844,13 @@
               let buttonsHtml = "";
               if (isActive) {
                 buttonsHtml = `
-                                          <button class="edit-goal-btn text-slate-400 hover:text-indigo-400" data-id="${goal.ID}" title="Editar">
-                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
-                                          </button>
-                                          <button class="delete-goal-btn text-slate-400 hover:text-red-400" data-id="${goal.ID}" title="Eliminar">
-                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                                          </button>
-                                          <button class="add-savings-goal-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${goal.ID}">Abonar</button>`;
+                                     <button class="edit-goal-btn text-slate-400 hover:text-indigo-400" data-id="${goal.ID}" title="Editar">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                                     </button>
+                                     <button class="delete-goal-btn text-slate-400 hover:text-red-400" data-id="${goal.ID}" title="Eliminar">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                     </button>
+                                     <button class="add-savings-goal-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${goal.ID}">Abonar</button>`;
               } else {
                 buttonsHtml = `<button class="reactivate-goal-btn btn btn-success text-xs font-bold px-2 py-1 rounded-md" data-id="${goal.ID}">Reactivar</button>`;
               }
@@ -2052,24 +1860,24 @@
                 !isActive ? "item-inactive" : ""
               }`;
               item.innerHTML = `
-                                  <div class="flex justify-between items-center">
-                                      <p class="font-semibold text-slate-200 flex-1 mr-2 truncate description-text">${
-                                        goal.Description
-                                      }</p>
-                                      <div class="flex items-center gap-2">${buttonsHtml}</div>
-                                  </div>
-                                  <div>
-                                      <div class="flex justify-between text-xs text-slate-400 mb-1">
-                                          <span>${formatter.format(
-                                            goal.CurrentAmount
-                                          )}</span>
-                                          <span class="font-medium">${formatter.format(
-                                            goal.TargetAmount
-                                          )}</span>
-                                      </div>
-                                      <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full bg-green-500" style="width: ${progress}%"></div></div>
-                                  </div>
-                              `;
+                                <div class="flex justify-between items-center">
+                                    <p class="font-semibold text-slate-200 flex-1 mr-2 truncate description-text">${
+                                      goal.Description
+                                    }</p>
+                                    <div class="flex items-center gap-2">${buttonsHtml}</div>
+                                </div>
+                                <div>
+                                     <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                         <span>${formatter.format(
+                                           goal.CurrentAmount
+                                         )}</span>
+                                         <span class="font-medium">${formatter.format(
+                                           goal.TargetAmount
+                                         )}</span>
+                                     </div>
+                                    <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full bg-green-500" style="width: ${progress}%"></div></div>
+                                </div>
+                            `;
               goalListEl.appendChild(item);
             });
         }
@@ -2176,110 +1984,48 @@
         suggestionModal.classList.remove("hidden");
       }
 
-      function getFilteredSuggestions() {
-        if (currentSuggestionFilterType === "all") {
-            return budgetSuggestions;
-        }
-
-        let startDate, endDate;
-        switch (currentSuggestionFilterType) {
-            case "day":
-                const dateValue = document.getElementById("suggestion-date-filter").value || new Date().toISOString().split("T")[0];
-                startDate = new Date(dateValue + "T00:00:00");
-                endDate = new Date(dateValue + "T23:59:59");
-                break;
-            case "month":
-                const month = parseInt(document.getElementById("suggestion-month-filter").value);
-                const yearMonth = parseInt(document.getElementById("suggestion-year-filter").value);
-                startDate = new Date(yearMonth, month, 1);
-                endDate = new Date(yearMonth, month + 1, 0, 23, 59, 59, 999);
-                break;
-            case "year":
-                const year = parseInt(document.getElementById("suggestion-year-only-filter").value);
-                startDate = new Date(year, 0, 1);
-                endDate = new Date(year, 11, 31, 23, 59, 59, 999);
-                break;
-        }
-        return budgetSuggestions.filter(s => new Date(s.Date) >= startDate && new Date(s.Date) <= endDate);
-      }
-
       function showAllSuggestions() {
         const formatter = new Intl.NumberFormat("es-CL", {
           style: "currency",
           currency: "CLP",
         });
-        const listContentEl = document.getElementById("suggestion-modal-content");
-        const summaryContentEl = document.getElementById("suggestion-summary-content");
-        document.getElementById("suggestion-modal-title").textContent = "Historial de Sugerencias";
-
-        const filteredSuggestions = getFilteredSuggestions();
-
-        if (filteredSuggestions.length === 0) {
-            listContentEl.innerHTML = '<p class="text-slate-400 text-center py-8">No hay sugerencias para el período seleccionado.</p>';
-            summaryContentEl.innerHTML = "";
-        } else {
-            listContentEl.innerHTML = filteredSuggestions
+        const content = document.getElementById("suggestion-modal-content");
+        document.getElementById("suggestion-modal-title").textContent =
+          "Historial de Sugerencias";
+        content.innerHTML =
+          budgetSuggestions.length === 0
+            ? '<p class="text-slate-400 text-center">No hay sugerencias registradas.</p>'
+            : budgetSuggestions
                 .slice()
                 .sort((a, b) => new Date(b.Date) - new Date(a.Date))
                 .map(
-                    (s) => `
-                        <div class="p-2 bg-slate-700/50 rounded-lg mb-3">
-                            <div class="flex justify-between items-baseline">
-                                <p class="font-bold text-slate-200">${
-                                  s.Description
-                                }</p>
-                                <p class="text-xs text-slate-400">${new Date(
-                                  s.Date
-                                ).toLocaleDateString("es-CL")}</p>
-                            </div>
-                            <p class="text-sm text-slate-300 font-semibold">Monto: ${formatter.format(
-                              s.Amount
-                            )}</p>
-                            <div class="text-xs mt-1 border-t border-slate-600 pt-1">
-                                <p><span class="text-green-400">Ahorro:</span> ${formatter.format(
-                                  s.SuggestedSavings
-                                )}</p>
-                                <p><span class="text-yellow-400">G. Fijos:</span> ${formatter.format(
-                                  s.SuggestedNeeds
-                                )}</p>
-                                <p><span class="text-blue-400">G. Personales:</span> ${formatter.format(
-                                  s.SuggestedWants
-                                )}</p>
-                            </div>
-                        </div>`
+                  (s) => `
+                      <div class="p-2 bg-slate-700/50 rounded-lg mb-3">
+                          <div class="flex justify-between items-baseline">
+                              <p class="font-bold text-slate-200">${
+                                s.Description
+                              }</p>
+                              <p class="text-xs text-slate-400">${new Date(
+                                s.Date
+                              ).toLocaleDateString("es-CL")}</p>
+                          </div>
+                          <p class="text-sm text-slate-300 font-semibold">Monto: ${formatter.format(
+                            s.Amount
+                          )}</p>
+                          <div class="text-xs mt-1 border-t border-slate-600 pt-1">
+                              <p><span class="text-green-400">Ahorro:</span> ${formatter.format(
+                                s.SuggestedSavings
+                              )}</p>
+                              <p><span class="text-yellow-400">G. Fijos:</span> ${formatter.format(
+                                s.SuggestedNeeds
+                              )}</p>
+                              <p><span class="text-blue-400">G. Personales:</span> ${formatter.format(
+                                s.SuggestedWants
+                              )}</p>
+                          </div>
+                      </div>`
                 )
                 .join("");
-
-            const totalIncomeAmount = filteredSuggestions.reduce((sum, s) => sum + s.Amount, 0);
-            const totalSuggestedSavings = filteredSuggestions.reduce((sum, s) => sum + s.SuggestedSavings, 0);
-            const totalSuggestedNeeds = filteredSuggestions.reduce((sum, s) => sum + s.SuggestedNeeds, 0);
-            const totalSuggestedWants = filteredSuggestions.reduce((sum, s) => sum + s.SuggestedWants, 0);
-
-            summaryContentEl.innerHTML = `
-                <div class="mt-4 pt-4 border-t-2 border-slate-600">
-                    <h3 class="font-bold text-lg text-slate-200 mb-2">Totales Sugeridos del Período</h3>
-                    <div class="p-3 bg-slate-800 rounded-lg space-y-2 text-sm">
-                        <p class="flex justify-between items-center">
-                            <span class="font-medium text-slate-300">Ingreso Total Considerado:</span>
-                            <span class="font-bold text-slate-100 text-base">${formatter.format(totalIncomeAmount)}</span>
-                        </p>
-                        <hr class="border-slate-700 my-1">
-                        <p class="flex justify-between items-center">
-                            <span class="font-medium text-green-400">50% Ahorro Total:</span>
-                            <span class="font-bold text-green-400">${formatter.format(totalSuggestedSavings)}</span>
-                        </p>
-                        <p class="flex justify-between items-center">
-                            <span class="font-medium text-yellow-400">30% G. Fijos Total:</span>
-                            <span class="font-bold text-yellow-400">${formatter.format(totalSuggestedNeeds)}</span>
-                        </p>
-                        <p class="flex justify-between items-center">
-                            <span class="font-medium text-blue-400">20% G. Personales Total:</span>
-                            <span class="font-bold text-blue-400">${formatter.format(totalSuggestedWants)}</span>
-                        </p>
-                    </div>
-                </div>
-            `;
-        }
         suggestionModal.classList.remove("hidden");
       }
 
@@ -2301,22 +2047,29 @@
             .sort((a, b) => new Date(b.Date) - new Date(a.Date))
             .map((s) => {
               const isDeposit = s.Type === "deposit";
+              const dateString = new Date(s.Date).toLocaleString("es-CL", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
               return `
                                   <div class="flex justify-between items-center p-2 bg-slate-700/50 rounded-lg mb-2 text-sm">
                                       <div>
                                           <p class="font-semibold text-slate-200">${
                                             s.Description
                                           }</p>
-                                          <p class="text-xs text-slate-400">${new Date(
-                                            s.Date
-                                          ).toLocaleDateString("es-CL")}</p>
+                                          <p class="text-xs text-slate-400">${dateString}</p>
                                       </div>
                                       <span class="font-bold ${
-                                        isDeposit ? "text-green-400" : "text-red-400"
+                                        isDeposit
+                                          ? "text-green-400"
+                                          : "text-red-400"
                                       }">
-                                          ${isDeposit ? "+" : "-"}${formatter.format(
-                s.Amount
-              )}
+                                          ${
+                                            isDeposit ? "+" : "-"
+                                          }${formatter.format(s.Amount)}
                                       </span>
                                   </div>`;
             })
@@ -2483,11 +2236,21 @@
         renderAll();
       }
 
-      function populateMonthFilter(elementId) {
-        const monthFilter = document.getElementById(elementId);
+      function populateMonthFilter() {
+        const monthFilter = document.getElementById("month-filter");
         const months = [
-          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre",
         ];
         monthFilter.innerHTML = months
           .map((month, index) => `<option value="${index}">${month}</option>`)
@@ -2495,12 +2258,12 @@
         monthFilter.value = new Date().getMonth();
       }
 
-      function populateYearFilters(yearElementId, yearOnlyElementId) {
-        const yearFilter = document.getElementById(yearElementId);
-        const yearOnlyFilter = document.getElementById(yearOnlyElementId);
+      function populateYearFilters() {
+        const yearFilter = document.getElementById("year-filter");
+        const yearOnlyFilter = document.getElementById("year-only-filter");
         const currentYear = new Date().getFullYear();
         const years = new Set(
-          [...transactions, ...budgetSuggestions].map((item) => new Date(item.Date).getFullYear())
+          transactions.map((t) => new Date(t.Date).getFullYear())
         );
         years.add(currentYear);
 
@@ -2508,27 +2271,17 @@
         const optionsHtml = sortedYears
           .map((year) => `<option value="${year}">${year}</option>`)
           .join("");
-        
-        if(yearFilter) yearFilter.innerHTML = optionsHtml;
-        if(yearOnlyFilter) yearOnlyFilter.innerHTML = optionsHtml;
-        
-        if(yearFilter) yearFilter.value = currentYear;
-        if(yearOnlyFilter) yearOnlyFilter.value = currentYear;
+        yearFilter.innerHTML = optionsHtml;
+        yearOnlyFilter.innerHTML = optionsHtml;
+        yearFilter.value = currentYear;
+        yearOnlyFilter.value = currentYear;
       }
-      
+
       function handleFilterTypeChange(e) {
         if (e.target.tagName === "BUTTON") {
           currentFilterType = e.target.dataset.filter;
           updateFilterControlsUI();
           renderAll();
-        }
-      }
-      
-      function handleSuggestionFilterTypeChange(e) {
-        if (e.target.tagName === "BUTTON") {
-          currentSuggestionFilterType = e.target.dataset.filter;
-          updateSuggestionFilterControlsUI();
-          showAllSuggestions();
         }
       }
 
@@ -2556,40 +2309,6 @@
           !document.getElementById("date-filter").value
         ) {
           document.getElementById("date-filter").value = new Date()
-            .toISOString()
-            .split("T")[0];
-        }
-      }
-
-      function updateSuggestionFilterControlsUI() {
-        document
-          .querySelectorAll(".suggestion-filter-type-btn")
-          .forEach((btn) =>
-            btn.classList.toggle(
-              "tab-active",
-              btn.dataset.filter === currentSuggestionFilterType
-            )
-          );
-        
-        const showDate = currentSuggestionFilterType === "day";
-        const showMonthYear = currentSuggestionFilterType === "month";
-        const showYearOnly = currentSuggestionFilterType === "year";
-
-        document
-          .getElementById("suggestion-date-filter-container")
-          .classList.toggle("hidden", !showDate);
-        document
-          .getElementById("suggestion-month-year-filter-container")
-          .classList.toggle("hidden", !showMonthYear);
-        document
-          .getElementById("suggestion-year-only-filter-container")
-          .classList.toggle("hidden", !showYearOnly);
-
-        if (
-          currentSuggestionFilterType === "day" &&
-          !document.getElementById("suggestion-date-filter").value
-        ) {
-          document.getElementById("suggestion-date-filter").value = new Date()
             .toISOString()
             .split("T")[0];
         }
