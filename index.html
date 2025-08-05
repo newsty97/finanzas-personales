@@ -108,7 +108,7 @@
   </head>
   <body class="p-4 sm:p-6 lg:p-8">
     <div class="max-w-screen-2xl mx-auto space-y-6">
-      <header class="text-center">
+      <header class="text-center relative">
         <h1
           class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400"
         >
@@ -117,6 +117,9 @@
         <p class="text-slate-400 mt-2">
           Tus finanzas, tus datos, tu control total con Excel.
         </p>
+        <button id="open-instructions-btn" class="absolute top-0 right-0 p-2 text-slate-400 hover:text-indigo-400 transition-colors" title="Ver instructivo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </button>
       </header>
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
@@ -620,6 +623,7 @@
           <div
             id="transaction-list"
             class="space-y-2 flex-grow overflow-y-auto pr-2"
+            style="max-height: 22.5rem;"
           >
             <p class="text-slate-500 text-center py-4">
               No hay movimientos registrados.
@@ -629,7 +633,81 @@
       </div>
     </div>
 
-    <!-- Modal de Sugerencias MODIFICADO -->
+    <!-- Modal de Instructivo -->
+    <div id="instruction-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+        <div class="card w-full max-w-2xl !p-6 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-slate-200">¡Bienvenido/a a tu Panel Financiero!</h2>
+                <button id="close-instructions-btn" class="text-3xl font-bold text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <div class="overflow-y-auto pr-4 space-y-6">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-100">1. Comienza con tus Datos</h3>
+                        <p class="text-slate-400 text-sm">Puedes empezar de dos maneras:</p>
+                        <ul class="list-disc list-inside text-slate-400 text-sm mt-2 space-y-1">
+                            <li><span class="font-semibold text-slate-300">Carga tu archivo:</span> Si ya tienes un Excel con tus finanzas, súbelo en la tarjeta "Gestión de Datos".</li>
+                            <li><span class="font-semibold text-slate-300">Usa la plantilla:</span> Si empiezas de cero, descarga nuestra plantilla. Es la forma más fácil de organizar tu información.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500/20 text-green-400">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-100">2. Registra tus Movimientos Diarios</h3>
+                        <p class="text-slate-400 text-sm">Usa la tarjeta "Movimiento Diario" para añadir cada <span class="text-green-400 font-semibold">ingreso</span> y <span class="text-red-400 font-semibold">gasto</span>. ¡No dejes que se te escape nada!</p>
+                        <p class="text-slate-400 text-sm mt-1">Al registrar un ingreso, te daremos una <span class="text-indigo-400 font-semibold">sugerencia</span> de cómo distribuirlo (50% ahorro, 30% gastos fijos, 20% gastos personales).</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-yellow-500/20 text-yellow-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-100">3. Organiza tus Deudas y Metas</h3>
+                        <ul class="list-disc list-inside text-slate-400 text-sm mt-2 space-y-1">
+                            <li><span class="font-semibold text-slate-300">Deudas:</span> Registra tus créditos o préstamos para ver cuánto te falta por pagar.</li>
+                            <li><span class="font-semibold text-slate-300">Metas:</span> ¿Un viaje? ¿Un nuevo computador? Crea tus metas de ahorro y mira cómo crecen tus fondos.</li>
+                        </ul>
+                        <p class="text-slate-400 text-sm mt-1">Puedes abonar a tus deudas y metas directamente desde el formulario de gastos.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-cyan-500/20 text-cyan-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18.7 8a6 6 0 0 0-6-6"></path><path d="M13 13a2 2 0 1 0-2-2"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-100">4. Analiza tus Finanzas</h3>
+                        <p class="text-slate-400 text-sm">En la sección de "Análisis Gráfico", podrás ver un resumen de tus gastos por categoría. Usa los filtros de <span class="font-semibold text-slate-300">Día, Mes o Año</span> para entender a dónde se va tu dinero.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                     <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-100">5. ¡No pierdas tu Progreso!</h3>
+                        <p class="text-slate-400 text-sm">Toda tu información se maneja localmente en tu navegador. Cuando termines, haz clic en <span class="font-semibold text-emerald-400">"Guardar y Descargar Excel"</span>. Esto guardará un nuevo archivo con todos los cambios que hiciste.</p>
+                    </div>
+                </div>
+            </div>
+             <div class="mt-6 text-center">
+                <button id="start-using-btn" class="btn btn-primary font-bold py-2 px-6 rounded-lg">¡Entendido, a empezar!</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal de Sugerencias -->
     <div
       id="suggestion-modal"
       class="fixed top-4 left-4 z-50 card w-full max-w-lg hidden !p-4"
@@ -709,7 +787,7 @@
         class="space-y-2 max-h-80 overflow-y-auto pr-2"
       ></div>
 
-      <!-- Sección de totales para sugerencias (MODIFICADA) -->
+      <!-- Sección de totales para sugerencias -->
       <div
         id="suggestion-totals"
         class="mt-3 pt-3 border-t border-slate-700 space-y-2 text-sm"
@@ -1021,6 +1099,9 @@
       const excelUpload = document.getElementById("excel-upload");
       const downloadBtn = document.getElementById("download-btn");
       const templateLink = document.getElementById("template-download-link");
+      
+      // Modals
+      const instructionModal = document.getElementById("instruction-modal");
       const suggestionModal = document.getElementById("suggestion-modal");
       const addSavingsToGoalModal = document.getElementById(
         "add-savings-to-goal-modal"
@@ -1041,6 +1122,8 @@
       document.addEventListener("DOMContentLoaded", () => {
         setupEventListeners();
         initializeUI();
+        // Show instructions on first visit (or every time for demo)
+        instructionModal.classList.remove('hidden');
       });
 
       function initializeUI() {
@@ -1073,6 +1156,12 @@
         excelUpload.addEventListener("change", handleFileUpload);
         downloadBtn.addEventListener("click", saveAndDownloadExcel);
         templateLink.addEventListener("click", downloadTemplate);
+        
+        // Instruction Modal Listeners
+        document.getElementById('open-instructions-btn').addEventListener('click', () => instructionModal.classList.remove('hidden'));
+        document.getElementById('close-instructions-btn').addEventListener('click', () => instructionModal.classList.add('hidden'));
+        document.getElementById('start-using-btn').addEventListener('click', () => instructionModal.classList.add('hidden'));
+
 
         document
           .getElementById("savings-form")
@@ -1976,7 +2065,6 @@
         suggestionModal.classList.remove("hidden");
       }
       
-      // FUNCIÓN MODIFICADA para incluir filtros y totales con porcentajes
       function showAllSuggestions() {
         populateSuggestionFilters();
         updateSuggestionFilterControlsUI();
@@ -2337,7 +2425,6 @@
         }
       }
 
-      // --- NUEVAS FUNCIONES PARA FILTROS DE SUGERENCIAS ---
       function populateSuggestionFilters() {
           const monthFilter = document.getElementById("suggestion-month-filter");
           const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
