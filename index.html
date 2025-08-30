@@ -1240,7 +1240,7 @@
 
         document
           .getElementById("view-suggestions-btn")
-          .addEventListener("click", showAllSuggestions);
+          .addEventListener("click", handleViewSuggestions); // <-- CORRECTION: Changed listener
         document
           .getElementById("close-suggestion-modal")
           .addEventListener("click", () =>
@@ -2068,8 +2068,35 @@
         suggestionModal.classList.remove("hidden");
       }
       
+      // --- CORRECTION START ---
+
+      // This new function is called only when the "Ver Sugerencias" button is clicked.
+      // It sets up the filters and their initial values before showing the modal.
+      function handleViewSuggestions() {
+          populateSuggestionFilters();
+
+          const monthFilter = document.getElementById("suggestion-month-filter");
+          const yearFilter = document.getElementById("suggestion-year-filter");
+
+          if (budgetSuggestions.length > 0) {
+              // Default to the month and year of the most recent suggestion
+              const latestSuggestion = budgetSuggestions.sort((a, b) => new Date(b.Date) - new Date(a.Date))[0];
+              const latestDate = new Date(latestSuggestion.Date);
+              yearFilter.value = latestDate.getFullYear();
+              monthFilter.value = latestDate.getMonth();
+          } else {
+              // Fallback to the current month and year if there are no suggestions
+              monthFilter.value = new Date().getMonth();
+              yearFilter.value = new Date().getFullYear();
+          }
+
+          // Now call the function to render the content with the correct filters
+          showAllSuggestions();
+      }
+
+      // This function now ONLY renders the content based on the current filter values.
+      // It no longer resets the filters, allowing the user's selection to persist.
       function showAllSuggestions() {
-        populateSuggestionFilters();
         updateSuggestionFilterControlsUI();
 
         const formatter = new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" });
@@ -2162,11 +2189,13 @@
                         <span class="text-xs text-slate-400 ml-2">(${formatPercent(totals.wants)})</span>
                     </div>
                 </div>
-            `;
+              `;
         }
 
         suggestionModal.classList.remove("hidden");
       }
+      // --- CORRECTION END ---
+
 
       function showSavingsHistory() {
         const content = document.getElementById(
@@ -2428,14 +2457,15 @@
         }
       }
 
+      // This function now only populates the filter options without setting their value.
+      // This is called once before the modal is shown for the first time.
       function populateSuggestionFilters() {
           const monthFilter = document.getElementById("suggestion-month-filter");
           const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-          if (monthFilter.options.length === 0) {
+          if (monthFilter.options.length < 12) {
               monthFilter.innerHTML = months.map((month, index) => `<option value="${index}">${month}</option>`).join("");
           }
-          monthFilter.value = new Date().getMonth();
-
+          
           const yearFilter = document.getElementById("suggestion-year-filter");
           const yearOnlyFilter = document.getElementById("suggestion-year-only-filter");
           const currentYear = new Date().getFullYear();
@@ -2444,11 +2474,10 @@
 
           const sortedYears = Array.from(years).sort((a, b) => b - a);
           const optionsHtml = sortedYears.map((year) => `<option value="${year}">${year}</option>`).join("");
-
+          
+          // We always update the year list in case new data has been loaded
           yearFilter.innerHTML = optionsHtml;
           yearOnlyFilter.innerHTML = optionsHtml;
-          yearFilter.value = currentYear;
-          yearOnlyFilter.value = currentYear;
       }
 
       function handleSuggestionFilterTypeChange(e) {
