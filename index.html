@@ -187,6 +187,8 @@
                 <select id="transaction-type" class="w-full select-field">
                   <option value="expense">Gasto</option>
                   <option value="income">Ingreso</option>
+                  <!-- MEJORA: Se añade la opción de retiro -->
+                  <option value="withdrawal">Retiro</option>
                 </select>
               </div>
               <div>
@@ -243,12 +245,7 @@
                   class="w-full select-field"
                   required
                 >
-                  <option value="Gastos Fijos">Gastos Fijos y Básicos</option>
-                  <option value="Gastos Personales">Gastos Personales</option>
-                  <option value="Abono a Deuda">Abono a Deuda</option>
-                  <option value="Ahorro a Metas">Ahorro a Metas</option>
-                  <option value="Ahorro General">Ahorro General</option>
-                  <option value="Gastos Varios">Gastos Varios</option>
+                  <!-- Las opciones se poblarán dinámicamente -->
                 </select>
               </div>
               <div id="debt-payment-section" class="hidden space-y-2">
@@ -660,7 +657,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-slate-100">2. Registra tus Movimientos Diarios</h3>
-                        <p class="text-slate-400 text-sm">Usa la tarjeta "Movimiento Diario" para añadir cada <span class="text-green-400 font-semibold">ingreso</span> y <span class="text-red-400 font-semibold">gasto</span>. ¡No dejes que se te escape nada!</p>
+                        <p class="text-slate-400 text-sm">Usa la tarjeta "Movimiento Diario" para añadir cada <span class="text-green-400 font-semibold">ingreso</span>, <span class="text-red-400 font-semibold">gasto</span> y <span class="text-red-400 font-semibold">retiro de ahorro</span>. ¡No dejes que se te escape nada!</p>
                         <p class="text-slate-400 text-sm mt-1">Al registrar un ingreso, te daremos una <span class="text-indigo-400 font-semibold">sugerencia</span> de cómo distribuirlo (50% ahorro, 30% gastos fijos, 20% gastos personales).</p>
                     </div>
                 </div>
@@ -1129,6 +1126,8 @@
         populateYearFilters();
         updateFilterControlsUI();
         setDefaultDates();
+        // MEJORA: Se llama a la función que actualiza las categorías al inicio
+        updateCategoryOptionsForType(document.getElementById("transaction-type").value);
         toggleDynamicCategorySections();
         renderAll();
       }
@@ -1240,7 +1239,7 @@
 
         document
           .getElementById("view-suggestions-btn")
-          .addEventListener("click", handleViewSuggestions); // <-- CORRECTION: Changed listener
+          .addEventListener("click", handleViewSuggestions);
         document
           .getElementById("close-suggestion-modal")
           .addEventListener("click", () =>
@@ -1479,37 +1478,37 @@
           showSingleSuggestion(suggestion);
         }
 
-        if (category === "Abono a Deuda") {
-          const debtId = document.getElementById("debt-select").value;
-          const debt = debts.find((d) => d.ID == debtId);
-          if (debt) {
-            debt.CurrentBalance = Math.max(0, debt.CurrentBalance - amount);
-            if (
-              description.trim().toLowerCase() === "abono a deuda" ||
-              description.trim() === ""
-            ) {
-              description = `Abono a: ${debt.Description}`;
+        // --- MEJORA: Lógica para manejar gastos, retiros y sus categorías ---
+        if (type === "expense" || type === "withdrawal") {
+            if (category === "Abono a Deuda") {
+                const debtId = document.getElementById("debt-select").value;
+                const debt = debts.find((d) => d.ID == debtId);
+                if (debt) {
+                    debt.CurrentBalance = Math.max(0, debt.CurrentBalance - amount);
+                    if (description.trim().toLowerCase() === "abono a deuda" || description.trim() === "") {
+                        description = `Abono a: ${debt.Description}`;
+                    }
+                    linkedIdProperty = { linkedDebtId: debt.ID };
+                }
+            } else if (category === "Ahorro a Metas") {
+                const goalId = document.getElementById("goal-select").value;
+                const goal = goals.find((g) => g.ID == goalId);
+                if (goal) {
+                    // Si es un gasto (depósito), se suma. Si es retiro, se resta.
+                    if (type === 'expense') {
+                         goal.CurrentAmount = Math.min(goal.TargetAmount, goal.CurrentAmount + amount);
+                    } else { // withdrawal
+                         goal.CurrentAmount = Math.max(0, goal.CurrentAmount - amount);
+                    }
+                   
+                    if (description.trim().toLowerCase() === "ahorro a meta" || description.trim() === "" || description.trim().toLowerCase() === "retiro de meta") {
+                        description = `${type === 'expense' ? 'Ahorro para' : 'Retiro de'}: ${goal.Description}`;
+                    }
+                    linkedIdProperty = { linkedGoalId: goal.ID };
+                }
             }
-            linkedIdProperty = { linkedDebtId: debt.ID };
-          }
-        } else if (category === "Ahorro a Metas") {
-          const goalId = document.getElementById("goal-select").value;
-          const goal = goals.find((g) => g.ID == goalId);
-          if (goal) {
-            goal.CurrentAmount = Math.min(
-              goal.TargetAmount,
-              goal.CurrentAmount + amount
-            );
-            if (
-              description.trim().toLowerCase() === "ahorro a meta" ||
-              description.trim() === ""
-            ) {
-              description = `Ahorro para: ${goal.Description}`;
-            }
-            linkedIdProperty = { linkedGoalId: goal.ID };
-          }
         }
-
+       
         transactions.push({
           ID: Date.now(),
           Type: type,
@@ -1704,7 +1703,8 @@
         const activeDebtIds = new Set(
           debts.filter((d) => d.isActive ?? true).map((d) => d.ID)
         );
-
+        
+        // El gráfico solo debe mostrar gastos, no retiros de ahorro
         const expensesForChart = filteredTransactions.filter((t) => {
           if (t.Type !== "expense") return false;
           if (t.linkedGoalId != null) return activeGoalIds.has(t.linkedGoalId);
@@ -1760,6 +1760,8 @@
         const totalIncome = filtered
           .filter((t) => t.Type === "income")
           .reduce((sum, t) => sum + t.Amount, 0);
+        
+        // Los gastos del período no deben incluir retiros de ahorro.
         const totalExpenses = filtered
           .filter((t) => t.Type === "expense")
           .reduce((sum, t) => sum + t.Amount, 0);
@@ -1774,11 +1776,16 @@
         const independentWithdrawals = savings
           .filter((s) => s.Type === "withdrawal")
           .reduce((sum, s) => sum + s.Amount, 0);
-        const totalNormalSavings = transactions
-          .filter(
-            (t) => t.Type === "expense" && t.Category === "Ahorro General"
-          )
-          .reduce((sum, t) => sum + t.Amount, 0);
+        
+        // --- MEJORA: Cálculo del Ahorro General Neto ---
+        // Se calculan los depósitos (gastos) y los retiros por separado para obtener el balance.
+        const generalSavingsDeposits = transactions
+            .filter(t => t.Type === 'expense' && t.Category === 'Ahorro General')
+            .reduce((sum, t) => sum + t.Amount, 0);
+        const generalSavingsWithdrawals = transactions
+            .filter(t => t.Type === 'withdrawal' && t.Category === 'Ahorro General')
+            .reduce((sum, t) => sum + t.Amount, 0);
+        const netGeneralSavings = generalSavingsDeposits - generalSavingsWithdrawals;
 
         const formatter = new Intl.NumberFormat("es-CL", {
           style: "currency",
@@ -1791,10 +1798,12 @@
         document.getElementById("current-balance").textContent =
           formatter.format(totalIncome - totalExpenses);
 
+        // --- MEJORA: Fórmula de Ahorro Total actualizada ---
+        // Se usa el Ahorro General Neto en lugar del total de depósitos.
         const totalSavingsAmount =
           totalGoalSavings +
           (independentDeposits - independentWithdrawals) +
-          totalNormalSavings;
+          netGeneralSavings;
         document.getElementById("total-savings").textContent =
           formatter.format(totalSavingsAmount);
       }
@@ -1818,7 +1827,8 @@
         filtered
           .sort((a, b) => new Date(b.Date) - new Date(a.Date))
           .forEach((t) => {
-            const isExpense = t.Type === "expense";
+            // MEJORA: Se considera 'withdrawal' como un egreso para el estilo visual
+            const isEgress = t.Type === "expense" || t.Type === "withdrawal";
             const formatter = new Intl.NumberFormat("es-CL", {
               style: "currency",
               currency: "CLP",
@@ -1843,7 +1853,7 @@
                   <p class="font-semibold text-slate-200">${t.Description}</p>
                   <p class="text-xs text-slate-400">${t.Category} - ${dateString} ${isInactiveLink ? "(Desactivado)" : ""}</p>
               </div>
-              <span class="font-bold ${isExpense ? "text-red-400" : "text-green-400"}">${isExpense ? "-" : "+"}${formatter.format(t.Amount)}</span>
+              <span class="font-bold ${isEgress ? "text-red-400" : "text-green-400"}">${isEgress ? "-" : "+"}${formatter.format(t.Amount)}</span>
             `;
             listEl.appendChild(item);
           });
@@ -1981,7 +1991,7 @@
                            <span>${formatter.format(goal.CurrentAmount)}</span>
                            <span class="font-medium">${formatter.format(goal.TargetAmount)}</span>
                        </div>
-                      <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full bg-green-500" style="width: ${progress}%"></div></div>
+                    <div class="w-full progress-bar rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full bg-green-500" style="width: ${progress}%"></div></div>
                   </div>`;
               goalListEl.appendChild(item);
             });
@@ -2068,10 +2078,6 @@
         suggestionModal.classList.remove("hidden");
       }
       
-      // --- CORRECTION START ---
-
-      // This new function is called only when the "Ver Sugerencias" button is clicked.
-      // It sets up the filters and their initial values before showing the modal.
       function handleViewSuggestions() {
           populateSuggestionFilters();
 
@@ -2079,23 +2085,18 @@
           const yearFilter = document.getElementById("suggestion-year-filter");
 
           if (budgetSuggestions.length > 0) {
-              // Default to the month and year of the most recent suggestion
               const latestSuggestion = budgetSuggestions.sort((a, b) => new Date(b.Date) - new Date(a.Date))[0];
               const latestDate = new Date(latestSuggestion.Date);
               yearFilter.value = latestDate.getFullYear();
               monthFilter.value = latestDate.getMonth();
           } else {
-              // Fallback to the current month and year if there are no suggestions
               monthFilter.value = new Date().getMonth();
               yearFilter.value = new Date().getFullYear();
           }
 
-          // Now call the function to render the content with the correct filters
           showAllSuggestions();
       }
 
-      // This function now ONLY renders the content based on the current filter values.
-      // It no longer resets the filters, allowing the user's selection to persist.
       function showAllSuggestions() {
         updateSuggestionFilterControlsUI();
 
@@ -2194,8 +2195,6 @@
 
         suggestionModal.classList.remove("hidden");
       }
-      // --- CORRECTION END ---
-
 
       function showSavingsHistory() {
         const content = document.getElementById(
@@ -2234,20 +2233,49 @@
         savingsHistoryModal.classList.remove("hidden");
       }
 
+      // --- MEJORA: Esta función ahora también actualiza las categorías disponibles ---
       function toggleCategorySection() {
-        const isIncome =
-          document.getElementById("transaction-type").value === "income";
-        document
-          .getElementById("category-section")
-          .classList.toggle("hidden", isIncome);
-        if (isIncome) {
-          document
-            .getElementById("debt-payment-section")
-            .classList.add("hidden");
-          document
-            .getElementById("goal-payment-section")
-            .classList.add("hidden");
+        const type = document.getElementById("transaction-type").value;
+        const categorySection = document.getElementById("category-section");
+        
+        if (type === "income") {
+            categorySection.classList.add("hidden");
+        } else {
+            categorySection.classList.remove("hidden");
+            updateCategoryOptionsForType(type);
         }
+        
+        toggleDynamicCategorySections();
+      }
+      
+      // --- MEJORA: Nueva función para poblar las categorías según el tipo de movimiento ---
+      function updateCategoryOptionsForType(type) {
+        const categorySelect = document.getElementById("transaction-category");
+        categorySelect.innerHTML = ''; // Limpiar opciones existentes
+        
+        let options = [];
+        if (type === 'expense') {
+            options = [
+                { value: "Gastos Fijos", text: "Gastos Fijos y Básicos" },
+                { value: "Gastos Personales", text: "Gastos Personales" },
+                { value: "Abono a Deuda", text: "Abono a Deuda" },
+                { value: "Ahorro a Metas", text: "Ahorro a Metas" },
+                { value: "Ahorro General", text: "Ahorro General" },
+                { value: "Gastos Varios", text: "Gastos Varios" },
+            ];
+        } else if (type === 'withdrawal') {
+            options = [
+                { value: "Ahorro General", text: "Retiro de Ahorro General" },
+                { value: "Ahorro a Metas", text: "Retiro de Ahorro a Metas" },
+            ];
+        }
+
+        options.forEach(opt => {
+            categorySelect.innerHTML += `<option value="${opt.value}">${opt.text}</option>`;
+        });
+
+        // Actualizar la visibilidad de las secciones dependientes
+        toggleDynamicCategorySections();
       }
 
       function toggleDynamicCategorySections() {
@@ -2457,8 +2485,6 @@
         }
       }
 
-      // This function now only populates the filter options without setting their value.
-      // This is called once before the modal is shown for the first time.
       function populateSuggestionFilters() {
           const monthFilter = document.getElementById("suggestion-month-filter");
           const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -2475,7 +2501,6 @@
           const sortedYears = Array.from(years).sort((a, b) => b - a);
           const optionsHtml = sortedYears.map((year) => `<option value="${year}">${year}</option>`).join("");
           
-          // We always update the year list in case new data has been loaded
           yearFilter.innerHTML = optionsHtml;
           yearOnlyFilter.innerHTML = optionsHtml;
       }
